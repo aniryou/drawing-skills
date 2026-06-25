@@ -1,0 +1,10 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# macOS
+.DS_Store
+
+# Scratch render output (inspection rasters live under /tmp; committed examples are explicit)
+/tmp/
+*.tmp

@@ -1,0 +1,49 @@
+[
+ {
+  "key": "multicloud",
+  "title": "Multi-cloud — the same web stack on every hyperscaler",
+  "subtitle": "One serverless request path (edge → API → function → datastore) drawn three times: AWS, Google Cloud, Azure",
+  "desc": "A client calls an equivalent serverless web stack on each cloud: CDN/edge to an API gateway to a function to a managed database.",
+  "size": { "w": 1180, "h": 660 },
+  "nodes": [
+   { "key": "client", "x": 80,  "y": 330, "icon": "client", "title": "Client", "sub": "browser", "label": "below" },
+
+   { "key": "aws_edge", "x": 340, "y": 150, "icon": "cloudfront",  "title": "CloudFront", "sub": "CDN / edge",  "label": "below" },
+   { "key": "aws_api",  "x": 580, "y": 150, "icon": "apigw",       "title": "API Gateway", "sub": "routing",   "label": "below" },
+   { "key": "aws_fn",   "x": 800, "y": 150, "icon": "lambda",      "title": "Lambda", "sub": "function",       "label": "below" },
+   { "key": "aws_db",   "x": 1030,"y": 150, "icon": "dynamodb",    "title": "DynamoDB", "sub": "NoSQL",        "label": "below" },
+
+   { "key": "gcp_edge", "x": 340, "y": 330, "icon": "gcp_lb",        "title": "Cloud Load Balancing", "sub": "edge", "label": "below" },
+   { "key": "gcp_api",  "x": 580, "y": 330, "icon": "gcp_apigw",     "title": "API Gateway", "sub": "routing",  "label": "below" },
+   { "key": "gcp_fn",   "x": 800, "y": 330, "icon": "gcp_functions", "title": "Cloud Functions", "sub": "function", "label": "below" },
+   { "key": "gcp_db",   "x": 1030,"y": 330, "icon": "gcp_firestore", "title": "Firestore", "sub": "NoSQL",      "label": "below" },
+
+   { "key": "az_edge",  "x": 340, "y": 510, "icon": "az_frontdoor",  "title": "Front Door", "sub": "edge",      "label": "below" },
+   { "key": "az_api",   "x": 580, "y": 510, "icon": "az_apim",       "title": "API Management", "sub": "routing","label": "below" },
+   { "key": "az_fn",    "x": 800, "y": 510, "icon": "az_functions",  "title": "Functions", "sub": "function",   "label": "below" },
+   { "key": "az_db",    "x": 1030,"y": 510, "icon": "az_cosmos",     "title": "Cosmos DB", "sub": "NoSQL",      "label": "below" }
+  ],
+  "groups": [
+   { "label": "AWS",          "dashed": false, "nodes": ["aws_edge", "aws_api", "aws_fn", "aws_db"], "pad": 26 },
+   { "label": "Google Cloud", "dashed": false, "nodes": ["gcp_edge", "gcp_api", "gcp_fn", "gcp_db"], "pad": 26 },
+   { "label": "Microsoft Azure", "dashed": false, "nodes": ["az_edge", "az_api", "az_fn", "az_db"], "pad": 26 }
+  ],
+  "edges": [
+   { "s": "client", "d": "aws_edge", "kind": "req", "label": "https", "n": "1", "ss": "t", "ds": "l", "via": null },
+   { "s": "aws_edge", "d": "aws_api", "kind": "req", "label": "route",  "n": "2", "ss": null, "ds": null, "via": null },
+   { "s": "aws_api",  "d": "aws_fn",  "kind": "req", "label": "invoke", "n": "3", "ss": null, "ds": null, "via": null },
+   { "s": "aws_fn",   "d": "aws_db",  "kind": "req", "label": "read / write", "n": "4", "ss": null, "ds": null, "via": null },
+
+   { "s": "client", "d": "gcp_edge", "kind": "req", "label": "https", "n": null, "ss": "r", "ds": "l", "via": null },
+   { "s": "gcp_edge", "d": "gcp_api", "kind": "req", "label": "route",  "n": null, "ss": null, "ds": null, "via": null },
+   { "s": "gcp_api",  "d": "gcp_fn",  "kind": "req", "label": "invoke", "n": null, "ss": null, "ds": null, "via": null },
+   { "s": "gcp_fn",   "d": "gcp_db",  "kind": "req", "label": "read / write", "n": null, "ss": null, "ds": null, "via": null },
+
+   { "s": "client", "d": "az_edge", "kind": "req", "label": "https", "n": null, "ss": "b", "ds": "l", "via": null },
+   { "s": "az_edge", "d": "az_api", "kind": "req", "label": "route",  "n": null, "ss": null, "ds": null, "via": null },
+   { "s": "az_api",  "d": "az_fn",  "kind": "req", "label": "invoke", "n": null, "ss": null, "ds": null, "via": null },
+   { "s": "az_fn",   "d": "az_db",  "kind": "req", "label": "read / write", "n": null, "ss": null, "ds": null, "via": null }
+  ],
+  "notes": "Same logical stack, three clouds — demonstrates the AWS / gcp_ / az_ icon families."
+ }
+]

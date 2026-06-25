@@ -1,0 +1,27 @@
+[
+ {
+  "key": "example",
+  "title": "Example — request flow",
+  "subtitle": "Minimal spec: nodes on a grid, a zone, numbered request edges, an identity edge, elbow connectors",
+  "desc": "A user signs in via an identity provider, then calls an API that invokes a service which reads a database.",
+  "size": { "w": 1040, "h": 480 },
+  "nodes": [
+   { "key": "user", "x": 90,  "y": 260, "icon": "user",  "title": "User",              "sub": "human",          "label": "below" },
+   { "key": "idp",  "x": 320, "y": 120, "icon": "entra", "title": "Identity provider", "sub": "issues token",   "label": "right" },
+   { "key": "api",  "x": 490, "y": 260, "icon": "apigw", "title": "API Gateway",       "sub": "auth + routing", "label": "below" },
+   { "key": "svc",  "x": 720, "y": 260, "icon": "lambda","title": "Service",           "sub": "business logic", "label": "below" },
+   { "key": "db",   "x": 940, "y": 260, "icon": "db",    "title": "Database",          "sub": "records",        "label": "below" }
+  ],
+  "groups": [
+   { "label": "AWS Cloud", "dashed": false, "nodes": ["api", "svc", "db"], "pad": 30 }
+  ],
+  "edges": [
+   { "s": "user", "d": "api", "kind": "req", "label": "request",      "n": "1", "ss": null, "ds": null, "via": null },
+   { "s": "idp",  "d": "user","kind": "id",  "label": "access token", "n": "2", "ss": "b",  "ds": "t",  "via": null },
+   { "s": "api",  "d": "svc", "kind": "req", "label": "invoke",       "n": "3", "ss": null, "ds": null, "via": null },
+   { "s": "svc",  "d": "db",  "kind": "req", "label": "query",        "n": "4", "ss": null, "ds": null, "via": null },
+   { "s": "db",   "d": "svc", "kind": "sup", "label": "rows",         "n": null,"ss": "b",  "ds": "b",  "via": null }
+  ],
+  "notes": "Copy this shape into your own specs.json; one object per diagram."
+ }
+]
