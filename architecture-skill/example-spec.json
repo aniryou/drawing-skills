@@ -23,5 +23,34 @@
    { "s": "db",   "d": "svc", "kind": "sup", "label": "rows",         "n": null,"ss": "b",  "ds": "b",  "via": null }
   ],
   "notes": "Copy this shape into your own specs.json; one object per diagram."
+ },
+ {
+  "key": "fanout",
+  "title": "Dense fan-out — distinct anchors + outer lanes",
+  "subtitle": "Untangling N edges that fan from one node and N edges that converge on one node — the two moves the auto-router can't always make for you",
+  "desc": "A processor fans a write to three stacked stores, then two of them converge on a rollup dashboard. The renderer keeps wires orthogonal on its own, but on a dense plane edges that share a side co-run or slice an icon. The fix is always in the spec, never the SVG.",
+  "size": { "w": 1240, "h": 640 },
+  "nodes": [
+   { "key": "caller", "x": 90,   "y": 330, "icon": "client",     "title": "Caller",    "sub": "request",        "label": "below" },
+   { "key": "proc",   "x": 430,  "y": 330, "icon": "lambda",     "title": "Processor", "sub": "fans out write", "label": "below" },
+   { "key": "a",      "x": 950,  "y": 150, "icon": "db",         "title": "Store A",   "sub": "/facts",         "label": "below" },
+   { "key": "b",      "x": 950,  "y": 330, "icon": "db",         "title": "Store B",   "sub": "/prefs",         "label": "below" },
+   { "key": "c",      "x": 950,  "y": 510, "icon": "db",         "title": "Store C",   "sub": "/summaries",     "label": "below" },
+   { "key": "dash",   "x": 1180, "y": 330, "icon": "cloudwatch", "title": "Rollup",    "sub": "dashboard",      "label": "below" }
+  ],
+  "groups": [
+   { "label": "Per-actor stores", "dashed": true, "nodes": ["a", "b", "c"], "pad": 34 }
+  ],
+  "edges": [
+   { "s": "caller", "d": "proc", "kind": "req", "label": "1 request",    "n": "1",  "ss": null, "ds": null, "via": null },
+
+   { "s": "proc",   "d": "b",    "kind": "req", "label": "2b write",     "n": "2b", "ss": "r",  "ds": "l",  "via": null },
+   { "s": "proc",   "d": "a",    "kind": "req", "label": "2a write",     "n": "2a", "ss": "tr", "ds": "l",  "via": [[660, 150]] },
+   { "s": "proc",   "d": "c",    "kind": "req", "label": "2c write",     "n": "2c", "ss": "br", "ds": "l",  "via": [[660, 510]] },
+
+   { "s": "b",      "d": "dash", "kind": "sup", "label": "rollup",       "n": "3",  "ss": "r",  "ds": "l",  "via": null },
+   { "s": "a",      "d": "dash", "kind": "sup", "label": "rollup",       "n": null, "ss": "r",  "ds": "t",  "via": [[1180, 230]] }
+  ],
+  "notes": "The two anti-tangle moves shown here. (1) FAN-OUT (proc -> a/b/c): each edge leaves a DISTINCT source anchor (ss = tr / r / br) so the three writes separate right at the node boundary instead of stacking on one side; the long top/bottom edges then ride their own outer lane via [[660,150]] / [[660,510]] so they don't co-run with the short middle hop. (2) CONVERGE (a + b -> dash): the two reads enter the rollup on DIFFERENT sides (b on the left, a on the top via [[1180,230]]) so they don't co-run into one anchor. Both are spec-only fixes (ss/ds/via) — re-render, never hand-edit the SVG."
  }
 ]

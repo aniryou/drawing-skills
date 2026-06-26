@@ -22,7 +22,9 @@ This skill bundles these files:
   **label-extent zones**, **wire-aware label placement** (labels dodge icons, captions, other
   labels, and other edges' wires) + **caption knockouts**, badges, legend; the grammar lives here.
 - `generate.py` — the driver: `uv run --with diagrams python generate.py [specs.json] [out_dir]`.
-- `example-spec.json` — a minimal, render-valid single-diagram example to copy.
+- `example-spec.json` — two render-valid diagrams to copy: a **minimal** request flow, plus a
+  **dense fan-out** showing the two anti-tangle moves (distinct `ss` anchors + outer `via` lanes)
+  for edges that fan from / converge on one node — the cases the auto-router can't always untangle.
 - `multicloud-example-spec.json` (+ rendered `multicloud-architecture.svg/.png`) — a showcase
   drawing the same serverless web stack on AWS, GCP, and Azure side by side.
 
