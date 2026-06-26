@@ -609,12 +609,15 @@ def render(spec: dict) -> str:
         x2, y2 = _anchor(d, ds)
         dxe, dye = x2 - x1, y2 - y1
         so, do = _exit_axis(ss, dxe, dye), _exit_axis(ds, -dxe, -dye)
-        # snap corner anchors onto the icon's straight edge (off the rounded corner) so an
-        # arrowhead never lands in the empty corner of the bounding box and reads as broken
+        via = e.get("via")
+        if via:                                          # a hand-routed edge leaves/enters along its
+            so = _exit_axis(ss, via[0][0] - s["x"], via[0][1] - s["y"])     # waypoints, not the straight
+            do = _exit_axis(ds, via[-1][0] - d["x"], via[-1][1] - d["y"])   # line — use the real legs
+        # snap corner anchors onto the icon's straight edge (off the rounded corner) along the *approach*
+        # axis, so an arrowhead never lands in the empty corner of the bounding box and reads as broken
         x1, y1 = _anchor_axis(s, ss, so)
         x2, y2 = _anchor_axis(d, ds, do)
         obst = [bx for k, bx in icon_boxes.items() if k not in (e["s"], e["d"])]
-        via = e.get("via")
         if via:                                          # honour hand-routed waypoints
             mids = via
         else:                                            # most direct orthogonal path around icons
