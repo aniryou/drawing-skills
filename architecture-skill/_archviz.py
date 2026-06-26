@@ -282,6 +282,25 @@ def _anchor(n: dict, side: str) -> tuple:
     }[side]
 
 
+_CORNER_INSET = 0.5   # how far along the edge a corner anchor sits (fraction of half-icon)
+
+
+def _anchor_axis(n: dict, side: str, axis: str) -> tuple:
+    """Connection point for `side`, with **corner** anchors snapped onto the icon's
+    straight edge along the routing `axis` ('h'/'v') — never the raw bounding-box
+    corner, which on a rounded-square icon is empty space (an arrowhead there reads as
+    disconnected). A corner stays *toward* its corner (offset `_CORNER_INSET`·half along
+    the edge) so it still separates from the side-centre anchor and from sibling edges."""
+    if side not in ("tl", "tr", "bl", "br"):
+        return _anchor(n, side)
+    x, y, h = n["x"], n["y"], IC / 2
+    hx = h if side in ("tr", "br") else -h        # right vs left corner
+    vy = h if side in ("bl", "br") else -h        # bottom vs top corner
+    if axis == "v":                               # leaves/enters vertically → top/bottom edge
+        return (x + _CORNER_INSET * hx, y + vy)
+    return (x + hx, y + _CORNER_INSET * vy)       # horizontally → left/right edge
+
+
 def _auto_sides(s: dict, d: dict) -> tuple:
     dx, dy = d["x"] - s["x"], d["y"] - s["y"]
     if abs(dx) >= abs(dy):
@@ -590,6 +609,10 @@ def render(spec: dict) -> str:
         x2, y2 = _anchor(d, ds)
         dxe, dye = x2 - x1, y2 - y1
         so, do = _exit_axis(ss, dxe, dye), _exit_axis(ds, -dxe, -dye)
+        # snap corner anchors onto the icon's straight edge (off the rounded corner) so an
+        # arrowhead never lands in the empty corner of the bounding box and reads as broken
+        x1, y1 = _anchor_axis(s, ss, so)
+        x2, y2 = _anchor_axis(d, ds, do)
         obst = [bx for k, bx in icon_boxes.items() if k not in (e["s"], e["d"])]
         via = e.get("via")
         if via:                                          # honour hand-routed waypoints

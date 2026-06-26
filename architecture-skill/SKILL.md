@@ -69,7 +69,9 @@ text is legible. Repeat until a pass finds **no overlaps**.
 **The renderer already handles these — don't hand-tune them:** icons over text · an edge label landing on
 a node/icon/another wire · two edge labels stacking · a label hoisted onto a zone title · a wire slicing a
 node caption · a node label spilling out of its zone · a zone title clipped by its border or the canvas ·
-an elbow crossing an icon · a diagonal/acute-angle wire · a `via` waypoint that introduces a slanted leg.
+an elbow crossing an icon · a diagonal/acute-angle wire · a `via` waypoint that introduces a slanted leg ·
+a corner anchor (`tr`/`br`/…) whose arrowhead would land in an icon's empty rounded corner — corners are
+snapped onto the icon's straight edge (toward the corner) so the arrow always reads as connected.
 
 **When you DO still see an overlap, it's almost always one of these — fix in the spec:**
 - **A label crammed onto a node** — it's too long for the gap between its two nodes, so there's no clear
