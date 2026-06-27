@@ -479,6 +479,28 @@ def _orthogonalize(pts: list, so: str, do: str, obstacles: list, placed: list = 
     return _simplify(out)
 
 
+def _perp_ends(pts: list, so: str, do: str, s: tuple, d: tuple, stub: float = 16.0) -> list:
+    """Make the wire leave the origin face and meet the dest face **perpendicular** to it,
+    never sliding *along* the face. If an end leg runs tangential to its face, lift the
+    neighbouring bend off the face by ``stub`` and insert a short perpendicular run-in — so
+    the arrowhead always points straight into the icon and the tail leaves straight out."""
+    if len(pts) < 3:
+        return pts
+    pts = [list(p) for p in pts]
+    for end in ("dest", "origin"):                       # dest first: editing the head won't shift it
+        a, b, axis, ctr = ((0, 1, so, s) if end == "origin"
+                           else (len(pts) - 1, len(pts) - 2, do, d))
+        seg_ax = "h" if abs(pts[a][1] - pts[b][1]) < 0.6 else "v"
+        if seg_ax == axis:                               # already perpendicular at this end
+            continue
+        i = 1 if axis == "v" else 0                      # the face-normal coordinate
+        lvl = pts[a][i] + (stub if pts[a][i] > ctr[i] else -stub)   # one stub outward from the face
+        pts[b][i] = lvl                                  # lift the bend off the face to the stub level
+        run_in = list(pts[a]); run_in[i] = lvl           # perpendicular run-in point at the anchor
+        pts.insert(a + 1 if end == "origin" else a, run_in)
+    return _simplify([tuple(p) for p in pts])
+
+
 def _point_at(pts: list, frac: float) -> tuple:
     """Point at ``frac`` of the polyline's arc length; 3rd value = leg is horizontal."""
     segs = [(pts[i], pts[i + 1]) for i in range(len(pts) - 1)]
@@ -631,6 +653,8 @@ def render(spec: dict) -> str:
         pts = _orthogonalize(pts, so, do, obst, placed_segs)
         pts = [p for i, p in enumerate(pts) if i == 0
                or (round(p[0]), round(p[1])) != (round(pts[i - 1][0]), round(pts[i - 1][1]))]
+        # arrows read best meeting both faces head-on: force perpendicular run-in / run-out
+        pts = _perp_ends(pts, so, do, (s["x"], s["y"]), (d["x"], d["y"]))
         cur_segs = [(pts[i], pts[i + 1]) for i in range(len(pts) - 1)]
         kind = e.get("kind", "req")
         label, n = e.get("label", ""), e.get("n")
