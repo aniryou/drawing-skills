@@ -18,7 +18,8 @@ ADK agent. Just talk to Claude Code — each step feeds the next.
 
 > Draw a Mermaid diagram of the academic-research ADK agent — an `academic_coordinator` root agent
 > that calls two AgentTool sub-agents, `academic_websearch_agent` (which uses `google_search`) and
-> `academic_newresearch_agent`, each returning its result to the coordinator.
+> `academic_newresearch_agent`, each returning its result to the coordinator. Number the edges 1–5 in
+> call order.
 
 ![first-pass Mermaid draft](docs/academic-research-draft.png)
 

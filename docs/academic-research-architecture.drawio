@@ -7,8 +7,8 @@
         <mxCell id="academic-research-title" value="Academic Research — Google ADK agent tree (Vertex AI)" style="text;html=1;align=left;verticalAlign=middle;fontSize=20;fontColor=#232F3E;" vertex="1" parent="1">
           <mxGeometry x="20" y="14" width="636" height="28" as="geometry"/>
         </mxCell>
-        <mxCell id="academic-research-sub" value="Root coordinator, two AgentTool sub-agents, and the google_search tool — mirrors the sample&#x27;s own architecture diagram" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontColor=#5F5E5A;" vertex="1" parent="1">
-          <mxGeometry x="20" y="44" width="767" height="16" as="geometry"/>
+        <mxCell id="academic-research-sub" value="Root coordinator, two AgentTool sub-agents, and the google_search tool — numbered by call sequence; mirrors the sample&#x27;s own architecture diagram" style="text;html=1;align=left;verticalAlign=middle;fontSize=12;fontColor=#5F5E5A;" vertex="1" parent="1">
+          <mxGeometry x="20" y="44" width="942" height="16" as="geometry"/>
         </mxCell>
         <mxCell id="academic-research-legl0" value="" style="shape=line;strokeColor=#444441;strokeWidth=2;html=1;" vertex="1" parent="1">
           <mxGeometry x="866" y="30" width="26" height="8" as="geometry"/>
@@ -31,17 +31,42 @@
         <mxCell id="academic-research-e0" value="sub-agent (AgentTool)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;endArrow=block;endFill=1;startArrow=none;strokeColor=#444441;strokeWidth=2.2;exitX=1.0;exitY=0.25;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;fontSize=10;fontColor=#5F5E5A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="academic-research-n-coordinator" target="academic-research-n-websearch">
           <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="490" y="317"/><mxPoint x="490" y="200"/></Array></mxGeometry>
         </mxCell>
-        <mxCell id="academic-research-e1" value="sub-agent (AgentTool)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;endArrow=block;endFill=1;startArrow=none;strokeColor=#444441;strokeWidth=2.2;exitX=1.0;exitY=0.75;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;fontSize=10;fontColor=#5F5E5A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="academic-research-n-coordinator" target="academic-research-n-newresearch">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="490" y="343"/><mxPoint x="490" y="470"/></Array></mxGeometry>
+        <mxCell id="academic-research-e0-b" value="1" style="ellipse;html=1;fillColor=#232F3E;strokeColor=none;fontColor=#FFFFFF;fontSize=9;fontStyle=1;" vertex="1" connectable="0" parent="academic-research-e0">
+          <mxGeometry x="0" y="0" relative="1" width="18" height="18" as="geometry">
+            <mxPoint x="-68" y="0" as="offset"/>
+          </mxGeometry>
         </mxCell>
-        <mxCell id="academic-research-e2" value="tool" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;endArrow=block;endFill=1;startArrow=none;strokeColor=#444441;strokeWidth=2.2;exitX=1.0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;fontSize=10;fontColor=#5F5E5A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="academic-research-n-websearch" target="academic-research-n-googlesearch">
+        <mxCell id="academic-research-e1" value="tool" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;endArrow=block;endFill=1;startArrow=none;strokeColor=#444441;strokeWidth=2.2;exitX=1.0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;fontSize=10;fontColor=#5F5E5A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="academic-research-n-websearch" target="academic-research-n-googlesearch">
           <mxGeometry relative="1" as="geometry"></mxGeometry>
         </mxCell>
-        <mxCell id="academic-research-e3" value="recent citing papers" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;endArrow=block;endFill=1;startArrow=none;strokeColor=#444441;strokeWidth=2.2;exitX=0.5;exitY=0.0;exitDx=0;exitDy=0;entryX=0.5;entryY=0.0;entryDx=0;entryDy=0;fontSize=10;fontColor=#5F5E5A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="academic-research-n-websearch" target="academic-research-n-coordinator">
+        <mxCell id="academic-research-e1-b" value="2" style="ellipse;html=1;fillColor=#232F3E;strokeColor=none;fontColor=#FFFFFF;fontSize=9;fontStyle=1;" vertex="1" connectable="0" parent="academic-research-e1">
+          <mxGeometry x="0" y="0" relative="1" width="18" height="18" as="geometry">
+            <mxPoint x="-22" y="0" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="academic-research-e2" value="recent citing papers" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;endArrow=block;endFill=1;startArrow=none;strokeColor=#444441;strokeWidth=2.2;exitX=0.5;exitY=0.0;exitDx=0;exitDy=0;entryX=0.5;entryY=0.0;entryDx=0;entryDy=0;fontSize=10;fontColor=#5F5E5A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="academic-research-n-websearch" target="academic-research-n-coordinator">
           <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="700" y="120"/><mxPoint x="280" y="120"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="academic-research-e2-b" value="3" style="ellipse;html=1;fillColor=#232F3E;strokeColor=none;fontColor=#FFFFFF;fontSize=9;fontStyle=1;" vertex="1" connectable="0" parent="academic-research-e2">
+          <mxGeometry x="0" y="0" relative="1" width="18" height="18" as="geometry">
+            <mxPoint x="-65" y="0" as="offset"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="academic-research-e3" value="sub-agent (AgentTool)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;endArrow=block;endFill=1;startArrow=none;strokeColor=#444441;strokeWidth=2.2;exitX=1.0;exitY=0.75;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;fontSize=10;fontColor=#5F5E5A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="academic-research-n-coordinator" target="academic-research-n-newresearch">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="490" y="343"/><mxPoint x="490" y="470"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="academic-research-e3-b" value="4" style="ellipse;html=1;fillColor=#232F3E;strokeColor=none;fontColor=#FFFFFF;fontSize=9;fontStyle=1;" vertex="1" connectable="0" parent="academic-research-e3">
+          <mxGeometry x="0" y="0" relative="1" width="18" height="18" as="geometry">
+            <mxPoint x="-68" y="0" as="offset"/>
+          </mxGeometry>
         </mxCell>
         <mxCell id="academic-research-e4" value="future directions" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;jettySize=auto;endArrow=block;endFill=1;startArrow=none;strokeColor=#444441;strokeWidth=2.2;exitX=0.5;exitY=1.0;exitDx=0;exitDy=0;entryX=0.5;entryY=1.0;entryDx=0;entryDy=0;fontSize=10;fontColor=#5F5E5A;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="academic-research-n-newresearch" target="academic-research-n-coordinator">
           <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="700" y="560"/><mxPoint x="280" y="560"/></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="academic-research-e4-b" value="5" style="ellipse;html=1;fillColor=#232F3E;strokeColor=none;fontColor=#FFFFFF;fontSize=9;fontStyle=1;" vertex="1" connectable="0" parent="academic-research-e4">
+          <mxGeometry x="0" y="0" relative="1" width="18" height="18" as="geometry">
+            <mxPoint x="-57" y="0" as="offset"/>
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>
