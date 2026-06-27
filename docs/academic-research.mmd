@@ -1,9 +1,13 @@
 flowchart LR
     coordinator["academic_coordinator<br/>root agent · Gemini 2.5 Pro"]
-    websearch["academic_websearch_agent<br/>Gemini 2.5 Pro · google_search"]
+    websearch["academic_websearch_agent<br/>Gemini 2.5 Pro"]
     newresearch["academic_newresearch_agent<br/>Gemini 2.5 Pro"]
+    googlesearch["google_search<br/>built-in tool"]
 
     coordinator -->|"sub-agent (AgentTool)"| websearch
     coordinator -->|"sub-agent (AgentTool)"| newresearch
+    websearch -->|"tool"| googlesearch
+    websearch -->|"recent citing papers"| coordinator
+    newresearch -->|"future directions"| coordinator
 
     style coordinator fill:#1a7f37,stroke:#125c28,color:#ffffff

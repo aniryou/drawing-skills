@@ -2,18 +2,22 @@
   {
     "key": "academic-research",
     "title": "Academic Research — Google ADK agent tree (Vertex AI)",
-    "subtitle": "Root coordinator with two AgentTool sub-agents — mirrors the sample's own architecture diagram",
-    "desc": "Academic Research ADK sample as an agent tree: the academic_coordinator root agent (Gemini 2.5 Pro) with two AgentTool sub-agents, academic_websearch_agent (grounded by google_search) and academic_newresearch_agent.",
-    "size": {"w": 1060, "h": 520},
+    "subtitle": "Root coordinator, two AgentTool sub-agents, and the google_search tool — mirrors the sample's own architecture diagram",
+    "desc": "Academic Research ADK sample: the academic_coordinator root agent (Gemini 2.5 Pro) calls two AgentTool sub-agents — academic_websearch_agent (grounded by google_search) returns recent citing papers, academic_newresearch_agent returns future directions.",
+    "size": {"w": 1240, "h": 640},
     "nodes": [
-      {"key": "coordinator", "x": 280, "y": 290, "icon": "gcp_vertex", "title": "academic_coordinator", "sub": "root agent · Gemini 2.5 Pro"},
-      {"key": "websearch", "x": 740, "y": 175, "icon": "gcp_vertex", "title": "academic_websearch_agent", "sub": "Gemini 2.5 Pro · google_search"},
-      {"key": "newresearch", "x": 740, "y": 405, "icon": "gcp_vertex", "title": "academic_newresearch_agent", "sub": "Gemini 2.5 Pro"}
+      {"key": "coordinator", "x": 280, "y": 330, "icon": "gcp_vertex", "title": "academic_coordinator", "sub": "root agent · Gemini 2.5 Pro"},
+      {"key": "websearch", "x": 700, "y": 200, "icon": "gcp_vertex", "title": "academic_websearch_agent", "sub": "Gemini 2.5 Pro"},
+      {"key": "newresearch", "x": 700, "y": 470, "icon": "gcp_vertex", "title": "academic_newresearch_agent", "sub": "Gemini 2.5 Pro"},
+      {"key": "googlesearch", "x": 1080, "y": 200, "icon": "tools", "title": "google_search", "sub": "built-in tool"}
     ],
     "groups": [],
     "edges": [
       {"s": "coordinator", "d": "websearch", "kind": "req", "label": "sub-agent (AgentTool)", "ss": "tr", "ds": "l"},
-      {"s": "coordinator", "d": "newresearch", "kind": "req", "label": "sub-agent (AgentTool)", "ss": "br", "ds": "l"}
+      {"s": "coordinator", "d": "newresearch", "kind": "req", "label": "sub-agent (AgentTool)", "ss": "br", "ds": "l"},
+      {"s": "websearch", "d": "googlesearch", "kind": "req", "label": "tool", "ss": "r", "ds": "l"},
+      {"s": "websearch", "d": "coordinator", "kind": "req", "label": "recent citing papers", "ss": "t", "ds": "t", "via": [[700, 120], [280, 120]]},
+      {"s": "newresearch", "d": "coordinator", "kind": "req", "label": "future directions", "ss": "b", "ds": "b", "via": [[700, 560], [280, 560]]}
     ]
   }
 ]

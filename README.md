@@ -111,9 +111,11 @@ ADK agent — a Gemini 2.5 Pro **`academic_coordinator`** root agent with two `A
 `academic-research-draft.mmd` → *mermaid-check* → `academic-research.mmd` → *architecture-skill* →
 `academic-research-architecture.svg` / `.png` / `.drawio`.
 
-The **components never change** — all three steps carry the **same 3 nodes and 2 edges**
-(`academic_coordinator` → `academic_websearch_agent`, `academic_newresearch_agent`). Only the
-*rendering* changes: mermaid-check fixes the layout, architecture-skill swaps in cloud icons.
+The **components never change** — all three steps carry the **same 4 nodes and 5 edges**: the
+`academic_coordinator`, its two `AgentTool` sub-agents (`academic_websearch_agent`,
+`academic_newresearch_agent`), and the `google_search` tool — with the two AgentTool calls, the two
+result returns, and the tool link. Only the *rendering* changes: mermaid-check fixes the layout,
+architecture-skill swaps in cloud icons.
 
 **Step 1 — a first-pass Mermaid draft**
 ([`docs/academic-research-draft.mmd`](docs/academic-research-draft.mmd)). A quick `graph TD` sketch — the
@@ -137,7 +139,7 @@ added or removed:
 **Step 3 — `architecture-skill` takes the step-2 mermaid and converts it to cloud icons.** It reads
 [`academic-research.mmd`](docs/academic-research.mmd), re-authors it at service altitude as
 [`academic-research-spec.json`](docs/academic-research-spec.json) (Vertex AI icons for the Gemini
-agents, the same root → sub-agent links), then renders
+agents, the same 4 nodes and 5 edges), then renders
 [`.svg`](docs/academic-research-architecture.svg) ·
 [`.png`](docs/academic-research-architecture.png) · editable
 [`.drawio`](docs/academic-research-architecture.drawio):
