@@ -24,11 +24,41 @@ ln -s "$(pwd)/mermaid-check"       ~/.claude/skills/mermaid-check
 
 ### Prerequisites
 
-- **architecture-skill** — [`uv`](https://docs.astral.sh/uv/) (runs the renderer with the `diagrams`
-  package on demand: `uv run --with diagrams python generate.py`). Optional `rsvg-convert`
-  (`brew install librsvg`) for PNG rasters; macOS `qlmanage` works with no install.
-- **mermaid-check** — `@mermaid-js/mermaid-cli` (`mmdc`) plus a headless Chrome for Puppeteer; see the
-  self-heal block in [`mermaid-check/SKILL.md`](mermaid-check/SKILL.md).
+Install the tools each skill needs — commands below (macOS / Linux).
+
+**`uv`** — runs the architecture renderer with the `diagrams` package on demand. *(architecture-skill)*
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh    # official installer (macOS / Linux)
+# alternatives:  brew install uv   ·   pipx install uv   ·   winget install astral-sh.uv (Windows)
+```
+
+**`rsvg-convert`** — renders the PNG raster. *Optional* — without it, SVG + draw.io still generate (and
+macOS `qlmanage -t -s 2200 -o /tmp/out file.svg` rasterizes with no install). *(architecture-skill)*
+
+```bash
+brew install librsvg               # macOS
+sudo apt install librsvg2-bin      # Debian / Ubuntu
+```
+
+**Node.js + `@mermaid-js/mermaid-cli`** — provides the `mmdc` command that `mermaid-check` renders with. *(mermaid-check)*
+
+```bash
+brew install node                          # macOS  (or download from https://nodejs.org)
+npm install -g @mermaid-js/mermaid-cli     # installs the `mmdc` CLI
+```
+
+**Headless Chrome for Puppeteer** — `mmdc` drives a headless browser to rasterize; install one and tell
+`mmdc` where it is. *(mermaid-check)*
+
+```bash
+npx -y @puppeteer/browsers install chrome-headless-shell@latest --path ~/.cache/puppeteer
+# point mmdc at it — add to your shell profile (or ~/.claude/settings.json "env"):
+export PUPPETEER_EXECUTABLE_PATH="$(ls -d ~/.cache/puppeteer/chrome-headless-shell/*/chrome-headless-shell-*/chrome-headless-shell | tail -1)"
+```
+
+If `mmdc` ever errors with *"Could not find Chrome"*, re-run the two commands above — that's the
+self-heal documented in [`mermaid-check/SKILL.md`](mermaid-check/SKILL.md).
 
 ### The workflow: sketch → check → render
 
@@ -66,6 +96,38 @@ describe the architecture in words — Mermaid is the on-ramp, not a requirement
 > **Mermaid → cloud icons is a re-authoring, not a transpile.** `architecture-skill` reads the Mermaid
 > to understand the system, then rewrites it at *service altitude* (one box per real cloud service, not
 > one per Mermaid node) so the result is an idiomatic cloud diagram rather than a 1:1 shape copy.
+
+### Worked example: the `academic-research` ADK sample
+
+The three steps run against Google's
+[`academic-research`](https://github.com/google/adk-samples/tree/main/python/agents/academic-research)
+ADK agent — a Gemini 2.5 Pro **coordinator** that analyzes a seminal paper, dispatches two `AgentTool`
+sub-agents (one grounded by **Google Search**) to find recent citing papers and propose future research
+directions, and runs on **Vertex AI Agent Engine**. All artifacts below live in [`docs/`](docs/).
+
+**Steps 1–2 — drafted as Mermaid, then validated & fixed with `mermaid-check`**
+([`docs/academic-research.mmd`](docs/academic-research.mmd)):
+
+![academic-research as a Mermaid flowchart](docs/academic-research-mermaid.png)
+
+**Step 3 — re-rendered with cloud icons by `architecture-skill`** — Vertex AI icons for the Gemini
+agents, a grouped *Agent Engine* zone, numbered request flow — from
+[`docs/academic-research-spec.json`](docs/academic-research-spec.json), emitted as
+[`.svg`](docs/academic-research-architecture.svg) ·
+[`.png`](docs/academic-research-architecture.png) · editable
+[`.drawio`](docs/academic-research-architecture.drawio):
+
+![academic-research as a cloud-architecture diagram](docs/academic-research-architecture.png)
+
+The exact commands:
+
+```bash
+# Step 2 — mermaid-check: render → look → fix (re-run until the image is clean)
+mmdc -i docs/academic-research.mmd -o docs/academic-research-mermaid.png -s 2 -b white
+
+# Step 3 — architecture-skill: render the spec with cloud icons (svg + png + drawio)
+uv run --with diagrams python architecture-skill/generate.py docs/academic-research-spec.json out
+```
 
 ## architecture-skill at a glance
 

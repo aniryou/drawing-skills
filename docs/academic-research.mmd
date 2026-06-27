@@ -1,0 +1,16 @@
+flowchart LR
+    researcher(["Researcher"])
+
+    subgraph engine["Vertex AI Agent Engine (reasoning engine)"]
+        coordinator["academic_coordinator<br/>root agent · Gemini 2.5 Pro<br/>analyzes the seminal paper"]
+        websearch["academic_websearch_agent<br/>Gemini 2.5 Pro"]
+        newresearch["academic_newresearch_agent<br/>Gemini 2.5 Pro"]
+    end
+
+    search[["Google Search<br/>built-in grounding tool"]]
+
+    researcher -->|"1 · seminal paper (PDF)"| coordinator
+    coordinator -->|"2 · find citing papers (AgentTool)"| websearch
+    websearch -->|"3 · web query"| search
+    coordinator -->|"4 · propose directions (AgentTool)"| newresearch
+    coordinator -->|"5 · synthesized report"| researcher
