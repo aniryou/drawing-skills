@@ -111,6 +111,10 @@ ADK agent — a Gemini 2.5 Pro **`academic_coordinator`** root agent with two `A
 `academic-research-draft.mmd` → *mermaid-check* → `academic-research.mmd` → *architecture-skill* →
 `academic-research-architecture.svg` / `.png` / `.drawio`.
 
+The **components never change** — all three steps carry the **same 3 nodes and 2 edges**
+(`academic_coordinator` → `academic_websearch_agent`, `academic_newresearch_agent`). Only the
+*rendering* changes: mermaid-check fixes the layout, architecture-skill swaps in cloud icons.
+
 **Step 1 — a first-pass Mermaid draft**
 ([`docs/academic-research-draft.mmd`](docs/academic-research-draft.mmd)). A quick `graph TD` sketch — the
 kind you get before any cleanup. It *renders*, but it's rough:
@@ -119,17 +123,14 @@ kind you get before any cleanup. It *renders*, but it's rough:
 
 **Step 2 — `mermaid-check` takes the step-1 draft, *looks* at the render, and fixes it.** Input
 [`academic-research-draft.mmd`](docs/academic-research-draft.mmd) → output
-[`academic-research.mmd`](docs/academic-research.mmd): a clean root-and-sub-agents tree matching the
-sample's own diagram. What it changed:
+[`academic-research.mmd`](docs/academic-research.mmd): the **same three agents and two links**, now
+rendered cleanly to match the sample's own diagram. It only touched *rendering* — no nodes or edges
+added or removed:
 
 - `graph TD` → `flowchart LR` — an agent tree reads left-to-right (root → children), not top-down.
-- **Dropped the redundant `results` return edges** (sub-agent → coordinator) — the official diagram is a
-  parent→child tree, not a call/return loop; the back-edges only added curved clutter and crowded labels.
-- **Folded the `google_search` tool into the `academic_websearch_agent` label** — it's that agent's
-  built-in tool, not a peer node, so it shouldn't sit as its own box.
+- **Split the run-on single-line labels into two-line, quoted `<br/>` captions** — quoting `<br/>` is
+  what keeps them parsing on strict renderers (GitHub, Azure DevOps wiki).
 - **Highlighted the root `academic_coordinator`** (green) to match the sample's diagram.
-- **Split the long single-line labels into two-line, quoted `<br/>` captions** — quoting `<br/>` is what
-  keeps them parsing on strict renderers (GitHub, Azure DevOps wiki).
 
 ![academic-research — after mermaid-check](docs/academic-research-mermaid.png)
 

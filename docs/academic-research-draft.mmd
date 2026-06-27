@@ -1,10 +1,6 @@
 graph TD
-    Coordinator[academic_coordinator root agent Gemini 2.5 Pro]
-    WebSearch[academic_websearch_agent Gemini 2.5 Pro]
-    NewResearch[academic_newresearch_agent Gemini 2.5 Pro]
-    GoogleSearch[google_search built-in tool]
-    Coordinator -->|sub-agent AgentTool| WebSearch
-    Coordinator -->|sub-agent AgentTool| NewResearch
-    WebSearch --> GoogleSearch
-    WebSearch -->|results| Coordinator
-    NewResearch -->|results| Coordinator
+    coordinator[academic_coordinator root agent Gemini 2.5 Pro]
+    websearch[academic_websearch_agent Gemini 2.5 Pro google_search]
+    newresearch[academic_newresearch_agent Gemini 2.5 Pro]
+    coordinator -->|sub-agent AgentTool| websearch
+    coordinator -->|sub-agent AgentTool| newresearch
