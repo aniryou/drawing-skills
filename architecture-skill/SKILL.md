@@ -43,18 +43,35 @@ This skill bundles these files:
   Mermaid/whiteboard sketch as service boxes".
 - Authoring or refreshing architecture docs where every box should be a real cloud service.
 
+## Arguments (skill input)
+The skill's invocation argument is free-form; pull these out of it (or the surrounding request):
+- **`format`** — `all` (default) · `svg` · `png` · `drawio`. Selects the output(s); maps straight to
+  `generate.py -f <format>`. Accept spoken cues too: "as draw.io" / "export to .drawio" → `drawio`,
+  "as a PNG" → `png`, "just the SVG" → `svg`, nothing said → `all`. A **bare format word** as the whole
+  argument (e.g. `/architecture-skill drawio`) means "regenerate the current spec as that format".
+- Everything else in the argument is the **diagram request** (what to draw, a target repo/path, a
+  reference image, "multi-cloud", …) — author or refresh `specs.json` accordingly, then generate.
+
 ## Toolchain (no Graphviz)
-- **Render:** `uv run --with diagrams python <generate.py> <specs.json> <out_dir>` (or `pip install
-  diagrams` then `python …`). The `diagrams` package ships the official AWS / GCP / Azure icon
-  PNGs; the renderer base64-embeds them into one portable SVG, and the exporter base64-embeds the
-  *same* icons into the `.drawio`.
-- **draw.io / diagrams.net output:** every run also writes `<key>-architecture.drawio` per spec and
-  one combined multi-tab `architecture.drawio`. These are **editable** mxGraph files — open in
+- **Render:** `uv run --with diagrams python <generate.py> <specs.json> <out_dir> [-f FORMAT]`
+  (or `pip install diagrams` then `python …`). The `diagrams` package ships the official AWS / GCP /
+  Azure icon PNGs; the renderer base64-embeds them into one portable SVG, and the exporter
+  base64-embeds the *same* icons into the `.drawio`.
+- **Output format — `--format` / `-f` (`all` · `svg` · `png` · `drawio`, default `all`):** by default
+  every run writes all three (`<key>-architecture.svg`, `.png` if `rsvg-convert` is on PATH, and the
+  per-plane `.drawio` + combined `architecture.drawio`). Pass `-f svg` / `-f png` / `-f drawio` to emit
+  **only** that format — e.g. `… generate.py specs.json out -f drawio`. (`-f png` rasterises via a
+  transient SVG that is then removed; the combined `architecture.drawio` is written only when draw.io
+  is selected.) **Honour the user's requested format**: if they say "as draw.io" / "export to
+  `.drawio`", "as a PNG", or "just the SVG", pass the matching `-f`; if they invoke the skill with a
+  bare format word as its argument (e.g. `/architecture-skill drawio`), treat that as `-f drawio`. When
+  no format is named, default to `all` so they get every form.
+- **draw.io / diagrams.net output:** the `.drawio` files are **editable** mxGraph documents — open in
   draw.io desktop, [app.diagrams.net](https://app.diagrams.net), or the VS Code "Draw.io
   Integration" extension; the icons are embedded so the file is self-contained. This is the path for
-  "convert / export this to draw.io": author (or reuse) the spec, run the generator, hand over the
-  `.drawio`. The SVG remains the deliverable for inline/GitHub rendering; the `.drawio` is for
-  hand-editing.
+  "convert / export this to draw.io": author (or reuse) the spec, run the generator with `-f drawio`
+  (or `all`), hand over the `.drawio`. The SVG remains the deliverable for inline/GitHub rendering; the
+  `.drawio` is for hand-editing.
 - **Rasterize to inspect** (the SVG is the deliverable; the PNG is for your eyes + a fallback):
   - macOS, zero-install: `qlmanage -t -s 2200 -o /tmp/out <file>.svg` (pads to a square — the content
     scales to the requested width; crop with `sips` if you need legible halves).
