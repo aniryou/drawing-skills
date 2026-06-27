@@ -107,15 +107,20 @@ ADK agent — a Gemini 2.5 Pro **`academic_coordinator`** root agent with two `A
 [`academic-research.svg`](https://github.com/google/adk-samples/blob/main/python/agents/academic-research/academic-research.svg)
 — a root coordinator linked to its two sub-agents. All artifacts live in [`docs/`](docs/).
 
+**Each step's input is the previous step's output** — one artifact flows through the chain:
+`academic-research-draft.mmd` → *mermaid-check* → `academic-research.mmd` → *architecture-skill* →
+`academic-research-architecture.svg` / `.png` / `.drawio`.
+
 **Step 1 — a first-pass Mermaid draft**
 ([`docs/academic-research-draft.mmd`](docs/academic-research-draft.mmd)). A quick `graph TD` sketch — the
 kind you get before any cleanup. It *renders*, but it's rough:
 
 ![academic-research — rough first-pass Mermaid draft](docs/academic-research-draft.png)
 
-**Step 2 — `mermaid-check` renders it, *looks* at the image, and fixes the source**
-([`docs/academic-research.mmd`](docs/academic-research.mmd)) so it matches the sample's own diagram —
-a clean root-and-sub-agents tree. What it changed here:
+**Step 2 — `mermaid-check` takes the step-1 draft, *looks* at the render, and fixes it.** Input
+[`academic-research-draft.mmd`](docs/academic-research-draft.mmd) → output
+[`academic-research.mmd`](docs/academic-research.mmd): a clean root-and-sub-agents tree matching the
+sample's own diagram. What it changed:
 
 - `graph TD` → `flowchart LR` — an agent tree reads left-to-right (root → children), not top-down.
 - **Dropped the redundant `results` return edges** (sub-agent → coordinator) — the official diagram is a
@@ -128,23 +133,27 @@ a clean root-and-sub-agents tree. What it changed here:
 
 ![academic-research — after mermaid-check](docs/academic-research-mermaid.png)
 
-**Step 3 — `architecture-skill` re-renders the same tree with cloud icons** — Vertex AI icons for the
-Gemini agents and the root → sub-agent links — from
-[`docs/academic-research-spec.json`](docs/academic-research-spec.json), emitted as
+**Step 3 — `architecture-skill` takes the step-2 mermaid and converts it to cloud icons.** It reads
+[`academic-research.mmd`](docs/academic-research.mmd), re-authors it at service altitude as
+[`academic-research-spec.json`](docs/academic-research-spec.json) (Vertex AI icons for the Gemini
+agents, the same root → sub-agent links), then renders
 [`.svg`](docs/academic-research-architecture.svg) ·
 [`.png`](docs/academic-research-architecture.png) · editable
 [`.drawio`](docs/academic-research-architecture.drawio):
 
 ![academic-research as a cloud-architecture diagram](docs/academic-research-architecture.png)
 
-The exact commands:
+The exact commands — note each reads the prior step's file:
 
 ```bash
-# Step 2 — mermaid-check: render → LOOK at the image → fix the source → repeat until clean
-mmdc -i docs/academic-research-draft.mmd -o /tmp/draft.png -s 2 -b white          # inspect the draft
-mmdc -i docs/academic-research.mmd       -o docs/academic-research-mermaid.png -s 2 -b white   # the fixed version
+# Step 1 → docs/academic-research-draft.mmd   (the LLM's first-pass draft)
 
-# Step 3 — architecture-skill: render the spec with cloud icons (svg + png + drawio)
+# Step 2 — mermaid-check: take the step-1 draft, render → LOOK → fix → save the cleaned diagram
+mmdc -i docs/academic-research-draft.mmd -o /tmp/draft.png -s 2 -b white                        # inspect the draft, then fix it →
+mmdc -i docs/academic-research.mmd       -o docs/academic-research-mermaid.png -s 2 -b white    # step-2 output (cleaned)
+
+# Step 3 — architecture-skill: take the step-2 mermaid, re-author it as a spec, render with cloud icons
+#          (reads academic-research.mmd → writes academic-research-spec.json → renders svg/png/drawio)
 uv run --with diagrams python architecture-skill/generate.py docs/academic-research-spec.json out
 ```
 
