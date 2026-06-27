@@ -553,6 +553,59 @@ def _place_label(pts: list, half_w: float, badge: bool, keepouts: list) -> tuple
     return best
 
 
+def group_box(g: dict, nodes: dict, W: float, H: float) -> tuple:
+    """A zone's rounded-rect ``(x, y, w, h)`` — an explicit ``bbox`` or auto-fitted around
+    each member's *rendered text* (+pad, +label band), never clipping the title, clamped to
+    the frame. Shared by the SVG renderer and the draw.io exporter so the two never drift."""
+    if "bbox" in g:
+        return tuple(g["bbox"])
+    boxes = [_node_box(nodes[k]) for k in g["nodes"]]
+    pad = g.get("pad", 26)
+    x0 = min(b[0] for b in boxes) - pad
+    y0 = min(b[1] for b in boxes) - pad - 16             # extra band for the group label
+    x1 = max(b[2] for b in boxes) + pad
+    y1 = max(b[3] for b in boxes) + pad
+    x1 = max(x1, x0 + len(g["label"]) * 6.9 + 28)        # never clip the zone title
+    x0, y0 = max(x0, 16), max(y0, 70)                    # stay inside the frame + header
+    x1, y1 = min(x1, W - 16), min(y1, H - 16)
+    return (x0, y0, x1 - x0, y1 - y0)
+
+
+def route_edge(e: dict, nodes: dict, icon_boxes: dict, placed_segs: list = ()) -> dict:
+    """Resolve one edge's full geometry: pick anchors (snapping corners onto the icon edge),
+    route the strictly-orthogonal elbow around icons (honouring a hand ``via``), then force
+    perpendicular run-in/run-out. Returns the polyline ``pts`` plus the chosen anchor sides
+    (``ss``/``ds``), exit/entry axes (``so``/``do``) and the snapped anchor points
+    (``src``/``dst``). Shared by the SVG renderer and the draw.io exporter — both get the
+    same route. ``placed_segs`` (already-routed wires) steers inserted bends into clear lanes,
+    so pass the running list in edge order to reproduce the renderer's exact output."""
+    s, d = nodes[e["s"]], nodes[e["d"]]
+    ss, ds = e.get("ss"), e.get("ds")
+    if not ss or not ds:
+        asd, bsd = _auto_sides(s, d)
+        ss, ds = ss or asd, ds or bsd
+    x1, y1 = _anchor(s, ss)
+    x2, y2 = _anchor(d, ds)
+    dxe, dye = x2 - x1, y2 - y1
+    so, do = _exit_axis(ss, dxe, dye), _exit_axis(ds, -dxe, -dye)
+    via = e.get("via")
+    if via:                                              # a hand-routed edge leaves/enters along its
+        so = _exit_axis(ss, via[0][0] - s["x"], via[0][1] - s["y"])     # waypoints, not the straight
+        do = _exit_axis(ds, via[-1][0] - d["x"], via[-1][1] - d["y"])   # line — use the real legs
+    # snap corner anchors onto the icon's straight edge (off the rounded corner) along the *approach* axis
+    x1, y1 = _anchor_axis(s, ss, so)
+    x2, y2 = _anchor_axis(d, ds, do)
+    obst = [bx for k, bx in icon_boxes.items() if k not in (e["s"], e["d"])]
+    mids = via if via else _route(x1, y1, ss, x2, y2, ds, obst)
+    pts = [(x1, y1), *mids, (x2, y2)]
+    pts = _orthogonalize(pts, so, do, obst, placed_segs)     # never an acute-angle leg
+    pts = [p for i, p in enumerate(pts) if i == 0
+           or (round(p[0]), round(p[1])) != (round(pts[i - 1][0]), round(pts[i - 1][1]))]
+    pts = _perp_ends(pts, so, do, (s["x"], s["y"]), (d["x"], d["y"]))   # head-on at both faces
+    return {"pts": pts, "ss": ss, "ds": ds, "so": so, "do": do,
+            "src": (x1, y1), "dst": (x2, y2)}
+
+
 def render(spec: dict) -> str:
     W, H = spec["size"]
     nodes = spec["nodes"]
@@ -598,19 +651,7 @@ def render(spec: dict) -> str:
     # ── PASS 1: groups (behind everything), fitted to each member's rendered text ──
     zone_titles = []                                     # title boxes — keep edge labels off them
     for g in spec.get("groups", []):
-        if "bbox" in g:
-            x, y, w, h = g["bbox"]
-        else:
-            boxes = [_node_box(nodes[k]) for k in g["nodes"]]
-            pad = g.get("pad", 26)
-            x0 = min(b[0] for b in boxes) - pad
-            y0 = min(b[1] for b in boxes) - pad - 16     # extra band for the group label
-            x1 = max(b[2] for b in boxes) + pad
-            y1 = max(b[3] for b in boxes) + pad
-            x1 = max(x1, x0 + len(g["label"]) * 6.9 + 28)   # never clip the zone title
-            x0, y0 = max(x0, 16), max(y0, 70)               # stay inside the frame + header
-            x1, y1 = min(x1, W - 16), min(y1, H - 16)
-            x, y, w, h = x0, y0, x1 - x0, y1 - y0
+        x, y, w, h = group_box(g, nodes, W, H)
         dashed = g.get("dashed", False)
         da = ' stroke-dasharray="4 4"' if dashed else ""
         col = "#879196" if dashed else INK
@@ -626,35 +667,7 @@ def render(spec: dict) -> str:
     placed_segs = []                                     # wires already routed — for lane separation
     node_ko = list(label_boxes.values()) + zone_titles
     for e in spec.get("edges", []):
-        s, d = nodes[e["s"]], nodes[e["d"]]
-        ss, ds = e.get("ss"), e.get("ds")
-        if not ss or not ds:
-            asd, bsd = _auto_sides(s, d)
-            ss, ds = ss or asd, ds or bsd
-        x1, y1 = _anchor(s, ss)
-        x2, y2 = _anchor(d, ds)
-        dxe, dye = x2 - x1, y2 - y1
-        so, do = _exit_axis(ss, dxe, dye), _exit_axis(ds, -dxe, -dye)
-        via = e.get("via")
-        if via:                                          # a hand-routed edge leaves/enters along its
-            so = _exit_axis(ss, via[0][0] - s["x"], via[0][1] - s["y"])     # waypoints, not the straight
-            do = _exit_axis(ds, via[-1][0] - d["x"], via[-1][1] - d["y"])   # line — use the real legs
-        # snap corner anchors onto the icon's straight edge (off the rounded corner) along the *approach*
-        # axis, so an arrowhead never lands in the empty corner of the bounding box and reads as broken
-        x1, y1 = _anchor_axis(s, ss, so)
-        x2, y2 = _anchor_axis(d, ds, do)
-        obst = [bx for k, bx in icon_boxes.items() if k not in (e["s"], e["d"])]
-        if via:                                          # honour hand-routed waypoints
-            mids = via
-        else:                                            # most direct orthogonal path around icons
-            mids = _route(x1, y1, ss, x2, y2, ds, obst)
-        pts = [(x1, y1), *mids, (x2, y2)]
-        # never emit an acute-angle leg; steer inserted bends clear of icons + placed wires
-        pts = _orthogonalize(pts, so, do, obst, placed_segs)
-        pts = [p for i, p in enumerate(pts) if i == 0
-               or (round(p[0]), round(p[1])) != (round(pts[i - 1][0]), round(pts[i - 1][1]))]
-        # arrows read best meeting both faces head-on: force perpendicular run-in / run-out
-        pts = _perp_ends(pts, so, do, (s["x"], s["y"]), (d["x"], d["y"]))
+        pts = route_edge(e, nodes, icon_boxes, placed_segs)["pts"]
         cur_segs = [(pts[i], pts[i + 1]) for i in range(len(pts) - 1)]
         kind = e.get("kind", "req")
         label, n = e.get("label", ""), e.get("n")

@@ -1,6 +1,6 @@
 ---
 name: architecture-skill
-description: Generate clean cloud-architecture diagrams across all hyperscalers (AWS, Google Cloud, Azure) — official provider service icons, left-to-right, elbow (right-angle) connectors, grouped zones, and a numbered request flow — as self-contained SVGs from a small declarative spec. Use whenever the user wants to create, convert, or redraw an architecture diagram in "AWS style" / "GCP style" / "Azure style" / "cloud icons" / draw.io-style cloud architecture, including multi-cloud diagrams, or turn a dense Mermaid / whiteboard sketch into approachable service-level boxes.
+description: Generate clean cloud-architecture diagrams across all hyperscalers (AWS, Google Cloud, Azure) — official provider service icons, left-to-right, elbow (right-angle) connectors, grouped zones, and a numbered request flow — as self-contained SVGs (plus editable draw.io / diagrams.net files) from a small declarative spec. Use whenever the user wants to create, convert, or redraw an architecture diagram in "AWS style" / "GCP style" / "Azure style" / "cloud icons", export/convert a diagram to draw.io (.drawio) format, draw a multi-cloud diagram, or turn a dense Mermaid / whiteboard sketch into approachable service-level boxes.
 ---
 
 # architecture-skill
@@ -10,8 +10,10 @@ Produce **cloud-architecture-style** diagrams for **any hyperscaler** — offici
 left-to-right, joined by **elbow (right-angle) connectors**, grouped into rounded **zones**
 (a Cloud / VPC / VNet boundary, a dashed sub-zone…), with a **numbered request flow** and a
 3-kind edge legend. Mix providers freely in one diagram for **multi-cloud** architectures.
-Output is a **self-contained SVG** (icons base64-embedded so GitHub renders it inline) + an
-optional PNG raster.
+Each spec is emitted **three ways from one source**: a **self-contained SVG** (icons base64-embedded
+so GitHub renders it inline), an optional **PNG** raster, and an **editable `.drawio`**
+(draw.io / diagrams.net) whose boxes you can drag, recolour, relabel and reconnect — same geometry,
+same icons.
 
 The diagram is **data**: you write a declarative spec (nodes + groups + edges) and the bundled
 renderer turns it into SVG — **no Graphviz** (the `diagrams` package is used only for the icon PNGs).
@@ -21,7 +23,14 @@ This skill bundles these files:
   from `via` points are auto-split into right-angle Ls steered clear of icons/wires),
   **label-extent zones**, **wire-aware label placement** (labels dodge icons, captions, other
   labels, and other edges' wires) + **caption knockouts**, badges, legend; the grammar lives here.
-- `generate.py` — the driver: `uv run --with diagrams python generate.py [specs.json] [out_dir]`.
+  The shared geometry (`group_box`, `route_edge`) is reused by the draw.io exporter so the two
+  backends never drift.
+- `_drawio.py` — the **draw.io / diagrams.net exporter**: turns a spec into an *editable* mxGraph
+  document (each node a `shape=image` vertex carrying the exact `diagrams` icon PNG, each wire an
+  orthogonal edge with the renderer's computed waypoints, zones as background rects, numbered
+  circle badges). One `.drawio` per spec plus a combined multi-tab `architecture.drawio`.
+- `generate.py` — the driver: `uv run --with diagrams python generate.py [specs.json] [out_dir]`
+  (writes the `.svg`, `.png`, per-plane `.drawio`, and the combined `architecture.drawio`).
 - `example-spec.json` — two render-valid diagrams to copy: a **minimal** request flow, plus a
   **dense fan-out** showing the two anti-tangle moves (distinct `ss` anchors + outer `via` lanes)
   for edges that fan from / converge on one node — the cases the auto-router can't always untangle.
@@ -37,7 +46,15 @@ This skill bundles these files:
 ## Toolchain (no Graphviz)
 - **Render:** `uv run --with diagrams python <generate.py> <specs.json> <out_dir>` (or `pip install
   diagrams` then `python …`). The `diagrams` package ships the official AWS / GCP / Azure icon
-  PNGs; the renderer base64-embeds them into one portable SVG.
+  PNGs; the renderer base64-embeds them into one portable SVG, and the exporter base64-embeds the
+  *same* icons into the `.drawio`.
+- **draw.io / diagrams.net output:** every run also writes `<key>-architecture.drawio` per spec and
+  one combined multi-tab `architecture.drawio`. These are **editable** mxGraph files — open in
+  draw.io desktop, [app.diagrams.net](https://app.diagrams.net), or the VS Code "Draw.io
+  Integration" extension; the icons are embedded so the file is self-contained. This is the path for
+  "convert / export this to draw.io": author (or reuse) the spec, run the generator, hand over the
+  `.drawio`. The SVG remains the deliverable for inline/GitHub rendering; the `.drawio` is for
+  hand-editing.
 - **Rasterize to inspect** (the SVG is the deliverable; the PNG is for your eyes + a fallback):
   - macOS, zero-install: `qlmanage -t -s 2200 -o /tmp/out <file>.svg` (pads to a square — the content
     scales to the requested width; crop with `sips` if you need legible halves).
@@ -51,7 +68,10 @@ This skill bundles these files:
    named by product (*not* per code-symbol); fine detail goes in the box's one-line `sub` or the
    surrounding prose, **never as extra nodes**. Aim for **10–18 nodes**.
 3. **Verify — load the render and hunt text overlaps (mandatory; iterate until zero).** See below.
-4. Commit the SVG (+ PNG) and the spec; **never hand-edit the SVG** (re-run the generator).
+   (Verify on the SVG/PNG; the `.drawio` shares the same geometry, so a clean SVG is a clean `.drawio`.)
+4. Commit the SVG (+ PNG + `.drawio`) and the spec; **never hand-edit the generated files** (re-run
+   the generator). The `.drawio` is the exception to "don't edit outputs" — it's *meant* to be opened
+   and tweaked by hand in draw.io; just don't expect those tweaks to survive a regenerate.
 
 ## Verify — load the render and hunt overlaps (do NOT skip; iterate until clean)
 The renderer avoids most collisions on its own: text is drawn **above** every icon, node captions get a
@@ -151,14 +171,16 @@ then add e.g. `"gcp_alloydb": ("diagrams.gcp.database", "AlloyDB")`. Keep the pr
 So the repo regenerates its diagrams without depending on this skill:
 ```bash
 mkdir -p <repo>/docs/architecture
-cp ~/.claude/skills/architecture-skill/{_archviz.py,generate.py} <repo>/docs/architecture/
+cp ~/.claude/skills/architecture-skill/{_archviz.py,_drawio.py,generate.py} <repo>/docs/architecture/
 cp ~/.claude/skills/architecture-skill/example-spec.json <repo>/docs/architecture/specs.json  # then edit
 cd <repo> && uv run --with diagrams python docs/architecture/generate.py
 ```
-Reference each SVG from markdown: `![<Title>](<key>-architecture.svg)`. Commit the `.svg` (+ `.png`),
-`specs.json`, and the two `.py` files. Record in the repo's CLAUDE.md that the diagrams come from this
-skill's renderer via `specs.json` + `generate.py` — edit the spec, re-run, never hand-edit the SVG.
+Reference each SVG from markdown: `![<Title>](<key>-architecture.svg)`. Commit the `.svg` (+ `.png`
++ `.drawio`), `specs.json`, and the three `.py` files. Record in the repo's CLAUDE.md that the
+diagrams come from this skill's renderer via `specs.json` + `generate.py` — edit the spec, re-run,
+never hand-edit the SVG. (A repo that relies on the skill directly need not vendor the `.py`; commit
+only `specs.json` + the generated `.svg`/`.png`/`.drawio`.)
 
 ## Cleanup
-Inspection rasters go under `/tmp`; mention the path or remove them. Commit only the SVG/PNG, the spec,
-and the two `.py` files.
+Inspection rasters go under `/tmp`; mention the path or remove them. Commit only the SVG/PNG/`.drawio`,
+the spec, and the three `.py` files.
