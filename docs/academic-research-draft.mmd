@@ -1,16 +1,10 @@
 graph TD
-    User([Researcher])
-    subgraph engine[Vertex AI Agent Engine]
-        Coordinator[academic_coordinator root agent Gemini 2.5 Pro]
-        WebSearch[academic_websearch_agent Gemini 2.5 Pro]
-        NewResearch[academic_newresearch_agent Gemini 2.5 Pro]
-        GoogleSearch[Google Search built-in grounding tool]
-    end
-    User -->|1 uploads seminal paper PDF| Coordinator
-    Coordinator -->|2 analyze the seminal paper| Coordinator
-    Coordinator -->|3 find citing papers AgentTool| WebSearch
-    WebSearch -->|4 web query| GoogleSearch
-    WebSearch -->|recent citing papers| Coordinator
-    Coordinator -->|5 propose new research directions AgentTool| NewResearch
-    NewResearch -->|future directions| Coordinator
-    Coordinator -->|6 synthesized report| User
+    Coordinator[academic_coordinator root agent Gemini 2.5 Pro]
+    WebSearch[academic_websearch_agent Gemini 2.5 Pro]
+    NewResearch[academic_newresearch_agent Gemini 2.5 Pro]
+    GoogleSearch[google_search built-in tool]
+    Coordinator -->|sub-agent AgentTool| WebSearch
+    Coordinator -->|sub-agent AgentTool| NewResearch
+    WebSearch --> GoogleSearch
+    WebSearch -->|results| Coordinator
+    NewResearch -->|results| Coordinator

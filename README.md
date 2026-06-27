@@ -101,9 +101,11 @@ describe the architecture in words — Mermaid is the on-ramp, not a requirement
 
 The three steps run against Google's
 [`academic-research`](https://github.com/google/adk-samples/tree/main/python/agents/academic-research)
-ADK agent — a Gemini 2.5 Pro **coordinator** that analyzes a seminal paper, dispatches two `AgentTool`
-sub-agents (one grounded by **Google Search**) to find recent citing papers and propose future research
-directions, and runs on **Vertex AI Agent Engine**. All artifacts below live in [`docs/`](docs/).
+ADK agent — a Gemini 2.5 Pro **`academic_coordinator`** root agent with two `AgentTool` sub-agents:
+**`academic_websearch_agent`** (grounded by the built-in `google_search` tool) and
+**`academic_newresearch_agent`**. The diagrams below mirror the structure in the sample's own
+[`academic-research.svg`](https://github.com/google/adk-samples/blob/main/python/agents/academic-research/academic-research.svg)
+— a root coordinator linked to its two sub-agents. All artifacts live in [`docs/`](docs/).
 
 **Step 1 — a first-pass Mermaid draft**
 ([`docs/academic-research-draft.mmd`](docs/academic-research-draft.mmd)). A quick `graph TD` sketch — the
@@ -112,22 +114,22 @@ kind you get before any cleanup. It *renders*, but it's rough:
 ![academic-research — rough first-pass Mermaid draft](docs/academic-research-draft.png)
 
 **Step 2 — `mermaid-check` renders it, *looks* at the image, and fixes the source**
-([`docs/academic-research.mmd`](docs/academic-research.mmd)). What it changed here:
+([`docs/academic-research.mmd`](docs/academic-research.mmd)) so it matches the sample's own diagram —
+a clean root-and-sub-agents tree. What it changed here:
 
-- `graph TD` → `flowchart LR` — a request pipeline reads left-to-right, not top-down.
-- **Pulled `Google Search` out of the *Agent Engine* subgraph** — it's an external Google service, not
-  part of the runtime; leaving it inside forced edges across the zone boundary.
-- **Dropped the `Coordinator → Coordinator` self-loop** ("analyze paper") — that sweeping back-edge
-  became a line in the node's label instead.
-- **Collapsed the bidirectional call/return pairs** (`recent citing papers`, `future directions`) into
-  single forward edges, so the colliding labels separate and the step numbers run cleanly 1–5.
+- `graph TD` → `flowchart LR` — an agent tree reads left-to-right (root → children), not top-down.
+- **Dropped the redundant `results` return edges** (sub-agent → coordinator) — the official diagram is a
+  parent→child tree, not a call/return loop; the back-edges only added curved clutter and crowded labels.
+- **Folded the `google_search` tool into the `academic_websearch_agent` label** — it's that agent's
+  built-in tool, not a peer node, so it shouldn't sit as its own box.
+- **Highlighted the root `academic_coordinator`** (green) to match the sample's diagram.
 - **Split the long single-line labels into two-line, quoted `<br/>` captions** — quoting `<br/>` is what
   keeps them parsing on strict renderers (GitHub, Azure DevOps wiki).
 
 ![academic-research — after mermaid-check](docs/academic-research-mermaid.png)
 
-**Step 3 — `architecture-skill` re-renders it with cloud icons** — Vertex AI icons for the Gemini
-agents, a grouped *Agent Engine* zone, numbered request flow — from
+**Step 3 — `architecture-skill` re-renders the same tree with cloud icons** — Vertex AI icons for the
+Gemini agents and the root → sub-agent links — from
 [`docs/academic-research-spec.json`](docs/academic-research-spec.json), emitted as
 [`.svg`](docs/academic-research-architecture.svg) ·
 [`.png`](docs/academic-research-architecture.png) · editable

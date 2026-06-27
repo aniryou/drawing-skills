@@ -1,26 +1,19 @@
 [
   {
     "key": "academic-research",
-    "title": "Academic Research — Google ADK multi-agent on Vertex AI",
-    "subtitle": "A seminal paper goes in; analysis, recent citing papers (via Google Search) and proposed future directions come out",
-    "desc": "Academic Research ADK sample: a Gemini 2.5 Pro coordinator orchestrates two AgentTool sub-agents on Vertex AI Agent Engine, one grounded by Google Search.",
-    "size": {"w": 1340, "h": 640},
+    "title": "Academic Research — Google ADK agent tree (Vertex AI)",
+    "subtitle": "Root coordinator with two AgentTool sub-agents — mirrors the sample's own architecture diagram",
+    "desc": "Academic Research ADK sample as an agent tree: the academic_coordinator root agent (Gemini 2.5 Pro) with two AgentTool sub-agents, academic_websearch_agent (grounded by google_search) and academic_newresearch_agent.",
+    "size": {"w": 1060, "h": 520},
     "nodes": [
-      {"key": "researcher", "x": 110, "y": 320, "icon": "user", "title": "Researcher", "sub": "uploads a seminal paper (PDF)"},
-      {"key": "coordinator", "x": 460, "y": 320, "icon": "gcp_vertex", "title": "Academic Coordinator", "sub": "root agent · Gemini 2.5 Pro"},
-      {"key": "websearch", "x": 810, "y": 195, "icon": "gcp_vertex", "title": "Web Search Agent", "sub": "Gemini 2.5 Pro"},
-      {"key": "newresearch", "x": 810, "y": 455, "icon": "gcp_vertex", "title": "New Research Agent", "sub": "Gemini 2.5 Pro"},
-      {"key": "search", "x": 1140, "y": 195, "icon": "tools", "title": "Google Search", "sub": "built-in grounding tool"}
+      {"key": "coordinator", "x": 280, "y": 290, "icon": "gcp_vertex", "title": "academic_coordinator", "sub": "root agent · Gemini 2.5 Pro"},
+      {"key": "websearch", "x": 740, "y": 175, "icon": "gcp_vertex", "title": "academic_websearch_agent", "sub": "Gemini 2.5 Pro · google_search"},
+      {"key": "newresearch", "x": 740, "y": 405, "icon": "gcp_vertex", "title": "academic_newresearch_agent", "sub": "Gemini 2.5 Pro"}
     ],
-    "groups": [
-      {"label": "Vertex AI Agent Engine", "dashed": false, "nodes": ["coordinator", "websearch", "newresearch"], "pad": 32}
-    ],
+    "groups": [],
     "edges": [
-      {"s": "researcher", "d": "coordinator", "kind": "req", "n": "1", "label": "seminal paper (PDF)", "ss": "r", "ds": "l"},
-      {"s": "coordinator", "d": "websearch", "kind": "req", "n": "2", "label": "find citing papers (AgentTool)", "ss": "tr", "ds": "l"},
-      {"s": "websearch", "d": "search", "kind": "req", "n": "3", "label": "web query", "ss": "r", "ds": "l"},
-      {"s": "coordinator", "d": "newresearch", "kind": "req", "n": "4", "label": "propose directions (AgentTool)", "ss": "br", "ds": "l"},
-      {"s": "coordinator", "d": "researcher", "kind": "req", "n": "5", "label": "synthesized report", "ss": "b", "ds": "b", "via": [[460, 575], [110, 575]]}
+      {"s": "coordinator", "d": "websearch", "kind": "req", "label": "sub-agent (AgentTool)", "ss": "tr", "ds": "l"},
+      {"s": "coordinator", "d": "newresearch", "kind": "req", "label": "sub-agent (AgentTool)", "ss": "br", "ds": "l"}
     ]
   }
 ]
