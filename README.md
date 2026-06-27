@@ -105,12 +105,28 @@ ADK agent — a Gemini 2.5 Pro **coordinator** that analyzes a seminal paper, di
 sub-agents (one grounded by **Google Search**) to find recent citing papers and propose future research
 directions, and runs on **Vertex AI Agent Engine**. All artifacts below live in [`docs/`](docs/).
 
-**Steps 1–2 — drafted as Mermaid, then validated & fixed with `mermaid-check`**
-([`docs/academic-research.mmd`](docs/academic-research.mmd)):
+**Step 1 — a first-pass Mermaid draft**
+([`docs/academic-research-draft.mmd`](docs/academic-research-draft.mmd)). A quick `graph TD` sketch — the
+kind you get before any cleanup. It *renders*, but it's rough:
 
-![academic-research as a Mermaid flowchart](docs/academic-research-mermaid.png)
+![academic-research — rough first-pass Mermaid draft](docs/academic-research-draft.png)
 
-**Step 3 — re-rendered with cloud icons by `architecture-skill`** — Vertex AI icons for the Gemini
+**Step 2 — `mermaid-check` renders it, *looks* at the image, and fixes the source**
+([`docs/academic-research.mmd`](docs/academic-research.mmd)). What it changed here:
+
+- `graph TD` → `flowchart LR` — a request pipeline reads left-to-right, not top-down.
+- **Pulled `Google Search` out of the *Agent Engine* subgraph** — it's an external Google service, not
+  part of the runtime; leaving it inside forced edges across the zone boundary.
+- **Dropped the `Coordinator → Coordinator` self-loop** ("analyze paper") — that sweeping back-edge
+  became a line in the node's label instead.
+- **Collapsed the bidirectional call/return pairs** (`recent citing papers`, `future directions`) into
+  single forward edges, so the colliding labels separate and the step numbers run cleanly 1–5.
+- **Split the long single-line labels into two-line, quoted `<br/>` captions** — quoting `<br/>` is what
+  keeps them parsing on strict renderers (GitHub, Azure DevOps wiki).
+
+![academic-research — after mermaid-check](docs/academic-research-mermaid.png)
+
+**Step 3 — `architecture-skill` re-renders it with cloud icons** — Vertex AI icons for the Gemini
 agents, a grouped *Agent Engine* zone, numbered request flow — from
 [`docs/academic-research-spec.json`](docs/academic-research-spec.json), emitted as
 [`.svg`](docs/academic-research-architecture.svg) ·
@@ -122,8 +138,9 @@ agents, a grouped *Agent Engine* zone, numbered request flow — from
 The exact commands:
 
 ```bash
-# Step 2 — mermaid-check: render → look → fix (re-run until the image is clean)
-mmdc -i docs/academic-research.mmd -o docs/academic-research-mermaid.png -s 2 -b white
+# Step 2 — mermaid-check: render → LOOK at the image → fix the source → repeat until clean
+mmdc -i docs/academic-research-draft.mmd -o /tmp/draft.png -s 2 -b white          # inspect the draft
+mmdc -i docs/academic-research.mmd       -o docs/academic-research-mermaid.png -s 2 -b white   # the fixed version
 
 # Step 3 — architecture-skill: render the spec with cloud icons (svg + png + drawio)
 uv run --with diagrams python architecture-skill/generate.py docs/academic-research-spec.json out
