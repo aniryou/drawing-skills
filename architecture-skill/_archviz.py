@@ -59,6 +59,7 @@ _ICONS = {
     "user": ("diagrams.aws.general", "User"),
     "users": ("diagrams.aws.general", "Users"),
     "client": ("diagrams.aws.general", "Client"),
+    "tools": ("diagrams.aws.general", "Toolkit"),     # tool dispatch (LOCAL / MCP tools) — distinct from compute
     "snowflake": ("diagrams.saas.analytics", "Snowflake"),
     "github": ("diagrams.onprem.vcs", "Github"),
     "ghactions": ("diagrams.onprem.ci", "GithubActions"),
@@ -100,7 +101,8 @@ _ICONS = {
     "glue": ("diagrams.aws.analytics", "Glue"),
     "kinesis": ("diagrams.aws.analytics", "Kinesis"),
     "emr": ("diagrams.aws.analytics", "EMR"),
-    "bedrock": ("diagrams.aws.ml", "Bedrock"),
+    "bedrock": ("diagrams.aws.ml", "Bedrock"),       # the foundation MODEL (brain) only
+    "agent": ("diagrams.aws.ml", "Q"),               # agentic AI — AgentCore Runtime / Strands Agent (not the model)
     "sagemaker": ("diagrams.aws.ml", "Sagemaker"),
     # security / identity
     "iam": ("diagrams.aws.security", "IdentityAndAccessManagementIam"),
@@ -558,8 +560,10 @@ def render(spec: dict) -> str:
         out.append(f'<text x="28" y="60" font-size="12" fill="{SUB}">'
                    f'{esc(spec["subtitle"])}</text>')
 
-    # edge-type legend (top right)
-    leg = [("req", "request"), ("id", "identity / token"), ("sup", "supporting")]
+    # edge-type legend (top right) — only the kinds this diagram actually uses
+    present = {e.get("kind", "req") for e in spec.get("edges", [])}
+    leg = [(k, lbl) for k, lbl in
+           (("req", "request"), ("id", "identity / token"), ("sup", "supporting")) if k in present]
     lx = W - 374
     for kind, lbl in leg:
         stroke, _w, dash, _m = KIND[kind]

@@ -11,10 +11,6 @@
 <text x="28" y="60" font-size="12" fill="#5F5E5A">One serverless request path (edge → API → function → datastore) drawn three times: AWS, Google Cloud, Azure</text>
 <line x1="806" y1="36" x2="832" y2="36" stroke="#444441" stroke-width="2"/>
 <text x="838" y="40" font-size="11" fill="#5F5E5A">request</text>
-<line x1="895.4" y1="36" x2="921.4" y2="36" stroke="#185FA5" stroke-width="2" stroke-dasharray="5 4"/>
-<text x="927.4" y="40" font-size="11" fill="#5F5E5A">identity / token</text>
-<line x1="1040.6" y1="36" x2="1066.6" y2="36" stroke="#888780" stroke-width="2"/>
-<text x="1072.6" y="40" font-size="11" fill="#5F5E5A">supporting</text>
 <rect x="280" y="82" width="802" height="156" rx="12" fill="none" stroke="#232F3E" stroke-width="1.6"/>
 <text x="294" y="104" font-size="12.5" fill="#232F3E">AWS</text>
 <rect x="247" y="262" width="839" height="156" rx="12" fill="none" stroke="#232F3E" stroke-width="1.6"/>
