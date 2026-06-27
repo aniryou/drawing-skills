@@ -34,8 +34,8 @@ This skill bundles these files:
 - `example-spec.json` — two render-valid diagrams to copy: a **minimal** request flow, plus a
   **dense fan-out** showing the two anti-tangle moves (distinct `ss` anchors + outer `via` lanes)
   for edges that fan from / converge on one node — the cases the auto-router can't always untangle.
-- `multicloud-example-spec.json` (+ rendered `multicloud-architecture.svg/.png`) — a showcase
-  drawing the same serverless web stack on AWS, GCP, and Azure side by side.
+- `multicloud-example-spec.json` — a multi-cloud example spec: the same serverless web stack drawn on
+  AWS, GCP, and Azure side by side (copy it as a starting point; `generate.py` renders it).
 
 ## When to use
 - "Make an AWS / GCP / Azure architecture diagram of …", "convert this to cloud icons", "draw a
