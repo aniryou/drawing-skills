@@ -1,0 +1,101 @@
+flowchart LR
+  subgraph build["Author & Build · GitHub · aniryou/bedrock-demo"]
+    direction TB
+    ontology["Ontology<br/>objects + actions"]
+    skills["Skills<br/>playbooks (md)"]
+    kbdocs["KB docs<br/>policy corpus"]
+    monorepo["aniryou/bedrock-demo<br/>agent·lib·knowledge·stubs·infra·app"]
+    ci["Path-filtered CI<br/>lint · pytest · tf · ontology"]
+    agentbuild["agent-build.yml<br/>bakes lib + knowledge · arm64"]
+    offlineeval["Offline eval gate<br/>pytest + LLM judge"]
+    stubsrel["stubs-release.yml<br/>Lambda zips + OpenAPI"]
+  end
+  subgraph artifacts["Artifacts · AWS"]
+    direction TB
+    ecr["Amazon ECR<br/>arm64 image :sha"]
+    s3art["S3 artifacts<br/>zips · OpenAPI · kb/ docs"]
+  end
+  subgraph deploy["Gated deploy · deploy.yml"]
+    direction TB
+    approval["Manual approval<br/>deploy.yml · env:production"]
+    oidc["GitHub OIDC role<br/>deploy · env:production trust"]
+    tfapply["terraform apply<br/>S3 remote state · preflight"]
+  end
+  subgraph cloud["AWS Cloud · us-west-2"]
+    direction TB
+    runtime["AgentCore Runtime<br/>Strands · ontology · skills · tools"]
+    model["Bedrock Nova Lite<br/>amazon.nova-lite-v1:0"]
+    guard["Bedrock Guardrail<br/>PROMPT_ATTACK filter"]
+    localtools["LOCAL tools<br/>describe · load_skill · search"]
+    kb["Knowledge Base<br/>Titan v2 · S3 Vectors"]
+    memshort["Memory · short-term<br/>raw events · in-session · 90d"]
+    memlong["Memory · long-term<br/>semantic · preference · summary"]
+    gateway["AgentCore Gateway<br/>MCP · OBO broker"]
+    cedar["Cedar Policy Engine<br/>ENFORCE · OAuthUser · permit_*"]
+    secrets["Secrets Manager<br/>RSA key · OBO secret"]
+    subgraph lambdas["AWS Lambda · arm64 · Function URLs"]
+      direction TB
+      sap["SAP credit<br/>SigV4 · AWS_IAM"]
+      orders["order-actions<br/>SigV4 · flagOrder"]
+      snowl["snowflake-query<br/>OBO Bearer | KEYPAIR_JWT"]
+    end
+    subgraph observe["Observe · control plane"]
+      direction TB
+      xray["X-Ray<br/>gen_ai spans · Tx Search"]
+      cwlogs["CloudWatch Logs<br/>EMF token metric · PII mask"]
+      dashboards["Dashboards<br/>4 audiences"]
+      alerts["Alarms → SNS<br/>composite → email"]
+      slo["App Signals SLOs<br/>latency · availability"]
+      onlineeval["Online Evaluations<br/>grade gen_ai spans · opt-in"]
+    end
+  end
+  entra["Microsoft Entra ID<br/>Users · OBO provider · agent app"]
+  user["Analyst<br/>human caller"]
+  webapp["Application<br/>Entra sign-in (browser)"]
+  snowflake["Snowflake<br/>EXTERNAL_OAUTH · RLS · tables"]
+
+  ontology -.->|"in-tree"| monorepo
+  skills -.->|"in-tree"| monorepo
+  kbdocs -.->|"in-tree"| monorepo
+  monorepo -.->|"PR validate · lint · test"| ci
+  monorepo -->|"B1a · on agent · lib · knowledge"| agentbuild
+  monorepo -->|"B1b · on stubs/**"| stubsrel
+  agentbuild -->|"B2 · run eval gate"| offlineeval
+  offlineeval -->|"B3a · green → push arm64"| ecr
+  stubsrel -->|"B3b · zips + OpenAPI"| s3art
+  ecr -->|"B4a · dispatch: image-published"| approval
+  s3art -->|"B4b · dispatch: stubs-published"| approval
+  approval -->|"B5 · approved → apply"| tfapply
+  oidc -.->|"OIDC assume deploy role"| tfapply
+  tfapply -->|"B6 · provisions stack"| runtime
+  user -->|"R1 · sign in"| webapp
+  entra -.->|"R2 · user token · CUSTOM_JWT"| webapp
+  webapp -->|"R3 · InvokeAgentRuntime · Bearer JWT"| runtime
+  runtime -->|"R4 · ConverseStream"| model
+  model -.->|"guardrailConfig · async"| guard
+  runtime -.->|"load ontology · skills"| localtools
+  runtime -.->|"Retrieve policies"| kb
+  runtime -.->|"write events"| memshort
+  memshort -.->|"async extract"| memlong
+  runtime -->|"R5 · MCP tool calls (+ user JWT)"| gateway
+  cedar -.->|"ENFORCE · permit/deny"| gateway
+  gateway -.->|"OBO token exchange · per-user"| entra
+  gateway -->|"R6a · SigV4 (agent)"| sap
+  gateway -->|"R6b · SigV4 (agent)"| orders
+  gateway -->|"R6c · OBO Bearer (user)"| snowl
+  snowl -->|"R7 · OAUTH → as the user · RLS"| snowflake
+  snowl -.->|"RSA key + config"| secrets
+  runtime -.->|"gen_ai spans"| xray
+  runtime -.->|"logs · token EMF"| cwlogs
+  cwlogs -.->|"metrics"| dashboards
+  dashboards -.->|"threshold"| alerts
+  alerts -.->|"SLI"| slo
+  xray -.->|"sample spans"| onlineeval
+  onlineeval -.->|"eval findings → knowledge"| ontology
+
+  linkStyle 12,15,18,24,25 stroke:#2563EB,stroke-width:1.6px;
+  linkStyle 0,1,2,3,19,20,21,22,30,31,32,33,34,35,36,37 stroke:#9CA3AF,stroke-width:1.4px;
+  classDef spine fill:#1a7f37,stroke:#0b5e25,color:#ffffff;
+  classDef ext fill:#f5a623,stroke:#b9770e,color:#1b1b1b;
+  class runtime spine;
+  class snowflake ext;

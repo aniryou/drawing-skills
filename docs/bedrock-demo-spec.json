@@ -1,0 +1,984 @@
+[
+  {
+    "key": "bedrock-demo",
+    "title": "End-to-end lifecycle \u2014 order-triage AgentCore",
+    "subtitle": "One frame, two tracks: a Build & deploy track (B1-B6) ships a gated agent image into the runtime spine (Request track R1-R7); telemetry and online evals (grey) close the loop back to the knowledge corpus",
+    "desc": "Combined whole-lifecycle view of the order-triage AgentCore mono-repo, fusing all nine planes. TOP tributary (Build & deploy, B1-B6): the knowledge corpus (ontology \u00b7 skills \u00b7 KB docs) and mono-repo flow through path-filtered CI and the agent-build / stubs-release publishers, past the offline eval gate, into ECR + S3 artifacts, then a human-gated, OIDC-auth terraform apply. The apply provisions the MIDDLE runtime spine (Request track R1-R7): an Entra-authenticated analyst invokes the AgentCore Runtime (CUSTOM_JWT) on Nova Lite behind a Guardrail, with LOCAL knowledge tools, a Knowledge Base, and per-user short/long-term Memory, through the Cedar-guarded MCP Gateway out to the stub Lambdas (SigV4 for sap/orders, Entra-OBO for snowflake) and into Snowflake as the human under RLS. BOTTOM tributary (Observe): runtime telemetry lands in X-Ray + CloudWatch (dashboards, alarms, SLOs); AgentCore Online Evaluations grade the gen_ai spans and feed findings back to the corpus.",
+    "size": {
+      "w": 2200,
+      "h": 1600
+    },
+    "nodes": [
+      {
+        "key": "ontology",
+        "x": 110,
+        "y": 100,
+        "icon": "tools",
+        "title": "Ontology",
+        "sub": "objects + actions",
+        "label": "below"
+      },
+      {
+        "key": "skills",
+        "x": 110,
+        "y": 230,
+        "icon": "python",
+        "title": "Skills",
+        "sub": "playbooks (md)",
+        "label": "below"
+      },
+      {
+        "key": "kbdocs",
+        "x": 110,
+        "y": 360,
+        "icon": "s3",
+        "title": "KB docs",
+        "sub": "policy corpus",
+        "label": "below"
+      },
+      {
+        "key": "monorepo",
+        "x": 300,
+        "y": 230,
+        "icon": "github",
+        "title": "aniryou/bedrock-demo",
+        "sub": "agent\u00b7lib\u00b7knowledge\u00b7stubs\u00b7infra\u00b7app",
+        "label": "below"
+      },
+      {
+        "key": "ci",
+        "x": 300,
+        "y": 360,
+        "icon": "ghactions",
+        "title": "Path-filtered CI",
+        "sub": "lint \u00b7 pytest \u00b7 tf \u00b7 ontology",
+        "label": "below"
+      },
+      {
+        "key": "agentbuild",
+        "x": 700,
+        "y": 100,
+        "icon": "ghactions",
+        "title": "agent-build.yml",
+        "sub": "bakes lib + knowledge \u00b7 arm64",
+        "label": "below"
+      },
+      {
+        "key": "offlineeval",
+        "x": 700,
+        "y": 230,
+        "icon": "shield",
+        "title": "Offline eval gate",
+        "sub": "pytest + LLM judge",
+        "label": "below"
+      },
+      {
+        "key": "stubsrel",
+        "x": 700,
+        "y": 360,
+        "icon": "ghactions",
+        "title": "stubs-release.yml",
+        "sub": "Lambda zips + OpenAPI",
+        "label": "below"
+      },
+      {
+        "key": "ecr",
+        "x": 940,
+        "y": 100,
+        "icon": "ecr",
+        "title": "Amazon ECR",
+        "sub": "arm64 image :sha",
+        "label": "below"
+      },
+      {
+        "key": "s3art",
+        "x": 940,
+        "y": 360,
+        "icon": "s3",
+        "title": "S3 artifacts",
+        "sub": "zips \u00b7 OpenAPI \u00b7 kb/ docs",
+        "label": "below"
+      },
+      {
+        "key": "approval",
+        "x": 1180,
+        "y": 100,
+        "icon": "shield",
+        "title": "Manual approval",
+        "sub": "deploy.yml \u00b7 env:production",
+        "label": "below"
+      },
+      {
+        "key": "oidc",
+        "x": 1100,
+        "y": 360,
+        "icon": "iam",
+        "title": "GitHub OIDC role",
+        "sub": "deploy \u00b7 env:production trust",
+        "label": "below"
+      },
+      {
+        "key": "tfapply",
+        "x": 1260,
+        "y": 230,
+        "icon": "terraform",
+        "title": "terraform apply",
+        "sub": "S3 remote state \u00b7 preflight",
+        "label": "below"
+      },
+      {
+        "key": "entra",
+        "x": 520,
+        "y": 600,
+        "icon": "entra",
+        "title": "Microsoft Entra ID",
+        "sub": "Users \u00b7 OBO provider \u00b7 agent app",
+        "label": "left"
+      },
+      {
+        "key": "cedar",
+        "x": 1080,
+        "y": 600,
+        "icon": "shield",
+        "title": "Cedar Policy Engine",
+        "sub": "ENFORCE \u00b7 OAuthUser \u00b7 permit_*",
+        "label": "below"
+      },
+      {
+        "key": "user",
+        "x": 490,
+        "y": 770,
+        "icon": "user",
+        "title": "Analyst",
+        "sub": "human caller",
+        "label": "below"
+      },
+      {
+        "key": "webapp",
+        "x": 630,
+        "y": 770,
+        "icon": "client",
+        "title": "Application",
+        "sub": "Entra sign-in (browser)",
+        "label": "below"
+      },
+      {
+        "key": "runtime",
+        "x": 930,
+        "y": 770,
+        "icon": "agent",
+        "title": "AgentCore Runtime",
+        "sub": "Strands \u00b7 ontology \u00b7 skills \u00b7 tools",
+        "label": "below"
+      },
+      {
+        "key": "gateway",
+        "x": 1180,
+        "y": 770,
+        "icon": "apigw",
+        "title": "AgentCore Gateway",
+        "sub": "MCP \u00b7 OBO broker",
+        "label": "below"
+      },
+      {
+        "key": "model",
+        "x": 930,
+        "y": 940,
+        "icon": "bedrock",
+        "title": "Bedrock Nova Lite",
+        "sub": "amazon.nova-lite-v1:0",
+        "label": "below"
+      },
+      {
+        "key": "guard",
+        "x": 930,
+        "y": 1110,
+        "icon": "shield",
+        "title": "Bedrock Guardrail",
+        "sub": "PROMPT_ATTACK filter",
+        "label": "below"
+      },
+      {
+        "key": "localtools",
+        "x": 700,
+        "y": 940,
+        "icon": "tools",
+        "title": "LOCAL tools",
+        "sub": "describe \u00b7 load_skill \u00b7 search",
+        "label": "below"
+      },
+      {
+        "key": "kb",
+        "x": 700,
+        "y": 1110,
+        "icon": "bedrock",
+        "title": "Knowledge Base",
+        "sub": "Titan v2 \u00b7 S3 Vectors",
+        "label": "below"
+      },
+      {
+        "key": "memshort",
+        "x": 1130,
+        "y": 940,
+        "icon": "db",
+        "title": "Memory \u00b7 short-term",
+        "sub": "raw events \u00b7 in-session \u00b7 90d",
+        "label": "below"
+      },
+      {
+        "key": "memlong",
+        "x": 1130,
+        "y": 1110,
+        "icon": "db",
+        "title": "Memory \u00b7 long-term",
+        "sub": "semantic \u00b7 preference \u00b7 summary",
+        "label": "below"
+      },
+      {
+        "key": "sap",
+        "x": 1460,
+        "y": 662,
+        "icon": "lambda",
+        "title": "SAP credit",
+        "sub": "SigV4 \u00b7 AWS_IAM",
+        "label": "below"
+      },
+      {
+        "key": "orders",
+        "x": 1460,
+        "y": 770,
+        "icon": "lambda",
+        "title": "order-actions",
+        "sub": "SigV4 \u00b7 flagOrder",
+        "label": "below"
+      },
+      {
+        "key": "snowl",
+        "x": 1460,
+        "y": 878,
+        "icon": "lambda",
+        "title": "snowflake-query",
+        "sub": "OBO Bearer | KEYPAIR_JWT",
+        "label": "below"
+      },
+      {
+        "key": "secrets",
+        "x": 1460,
+        "y": 1110,
+        "icon": "secrets",
+        "title": "Secrets Manager",
+        "sub": "RSA key \u00b7 OBO secret",
+        "label": "below"
+      },
+      {
+        "key": "snowflake",
+        "x": 1980,
+        "y": 878,
+        "icon": "snowflake",
+        "title": "Snowflake",
+        "sub": "EXTERNAL_OAUTH \u00b7 RLS \u00b7 tables",
+        "label": "below"
+      },
+      {
+        "key": "xray",
+        "x": 790,
+        "y": 1310,
+        "icon": "xray",
+        "title": "X-Ray",
+        "sub": "gen_ai spans \u00b7 Tx Search",
+        "label": "below"
+      },
+      {
+        "key": "cwlogs",
+        "x": 1030,
+        "y": 1310,
+        "icon": "cwlogs",
+        "title": "CloudWatch Logs",
+        "sub": "EMF token metric \u00b7 PII mask",
+        "label": "below"
+      },
+      {
+        "key": "dashboards",
+        "x": 1260,
+        "y": 1310,
+        "icon": "cloudwatch",
+        "title": "Dashboards",
+        "sub": "4 audiences",
+        "label": "below"
+      },
+      {
+        "key": "alerts",
+        "x": 1460,
+        "y": 1310,
+        "icon": "alarm",
+        "title": "Alarms \u2192 SNS",
+        "sub": "composite \u2192 email",
+        "label": "below"
+      },
+      {
+        "key": "slo",
+        "x": 1660,
+        "y": 1310,
+        "icon": "cloudwatch",
+        "title": "App Signals SLOs",
+        "sub": "latency \u00b7 availability",
+        "label": "below"
+      },
+      {
+        "key": "onlineeval",
+        "x": 1880,
+        "y": 1310,
+        "icon": "bedrock",
+        "title": "Online Evaluations",
+        "sub": "grade gen_ai spans \u00b7 opt-in",
+        "label": "below"
+      }
+    ],
+    "groups": [
+      {
+        "label": "Author & Build \u00b7 GitHub \u00b7 aniryou/bedrock-demo (mono-repo)",
+        "dashed": false,
+        "nodes": [
+          "ontology",
+          "skills",
+          "kbdocs",
+          "monorepo",
+          "ci",
+          "agentbuild",
+          "offlineeval",
+          "stubsrel"
+        ],
+        "pad": 30
+      },
+      {
+        "label": "Artifacts \u00b7 AWS",
+        "dashed": true,
+        "nodes": [
+          "ecr",
+          "s3art"
+        ],
+        "pad": 24
+      },
+      {
+        "label": "Gated deploy \u00b7 deploy.yml",
+        "dashed": true,
+        "nodes": [
+          "approval",
+          "oidc",
+          "tfapply"
+        ],
+        "pad": 24
+      },
+      {
+        "label": "AWS Cloud \u00b7 us-west-2",
+        "dashed": false,
+        "nodes": [
+          "runtime",
+          "model",
+          "guard",
+          "localtools",
+          "kb",
+          "memshort",
+          "memlong",
+          "gateway",
+          "cedar",
+          "sap",
+          "orders",
+          "snowl",
+          "secrets",
+          "xray",
+          "cwlogs",
+          "dashboards",
+          "alerts",
+          "slo",
+          "onlineeval"
+        ],
+        "pad": 32
+      },
+      {
+        "label": "AWS Lambda \u00b7 arm64 \u00b7 Function URLs",
+        "dashed": true,
+        "nodes": [
+          "sap",
+          "orders",
+          "snowl"
+        ],
+        "pad": 24
+      },
+      {
+        "label": "Observe \u00b7 control plane",
+        "dashed": true,
+        "nodes": [
+          "xray",
+          "cwlogs",
+          "dashboards",
+          "alerts",
+          "slo",
+          "onlineeval"
+        ],
+        "pad": 24
+      }
+    ],
+    "edges": [
+      {
+        "s": "ontology",
+        "d": "monorepo",
+        "kind": "sup",
+        "label": "in-tree",
+        "n": null,
+        "ss": "r",
+        "ds": "l",
+        "via": [
+          [
+            200,
+            100
+          ],
+          [
+            200,
+            230
+          ]
+        ]
+      },
+      {
+        "s": "skills",
+        "d": "monorepo",
+        "kind": "sup",
+        "label": "in-tree",
+        "n": null,
+        "ss": "r",
+        "ds": "l",
+        "via": null
+      },
+      {
+        "s": "kbdocs",
+        "d": "monorepo",
+        "kind": "sup",
+        "label": "in-tree",
+        "n": null,
+        "ss": "r",
+        "ds": "l",
+        "via": [
+          [
+            200,
+            360
+          ],
+          [
+            200,
+            230
+          ]
+        ]
+      },
+      {
+        "s": "monorepo",
+        "d": "ci",
+        "kind": "sup",
+        "label": "PR validate \u00b7 lint \u00b7 test",
+        "n": null,
+        "ss": "b",
+        "ds": "t",
+        "via": null
+      },
+      {
+        "s": "monorepo",
+        "d": "agentbuild",
+        "kind": "req",
+        "label": "on agent \u00b7 lib \u00b7 knowledge",
+        "n": "B1a",
+        "ss": "tr",
+        "ds": "l",
+        "via": [
+          [
+            560,
+            230
+          ],
+          [
+            560,
+            100
+          ]
+        ]
+      },
+      {
+        "s": "monorepo",
+        "d": "stubsrel",
+        "kind": "req",
+        "label": "on stubs/**",
+        "n": "B1b",
+        "ss": "br",
+        "ds": "l",
+        "via": [
+          [
+            560,
+            230
+          ],
+          [
+            560,
+            360
+          ]
+        ]
+      },
+      {
+        "s": "agentbuild",
+        "d": "offlineeval",
+        "kind": "req",
+        "label": "run eval gate",
+        "n": "B2",
+        "ss": "b",
+        "ds": "t",
+        "via": null
+      },
+      {
+        "s": "offlineeval",
+        "d": "ecr",
+        "kind": "req",
+        "label": "green \u2192 push arm64",
+        "n": "B3a",
+        "ss": "tr",
+        "ds": "l",
+        "via": [
+          [
+            820,
+            230
+          ],
+          [
+            820,
+            100
+          ]
+        ]
+      },
+      {
+        "s": "stubsrel",
+        "d": "s3art",
+        "kind": "req",
+        "label": "zips + OpenAPI",
+        "n": "B3b",
+        "ss": "r",
+        "ds": "l",
+        "via": null
+      },
+      {
+        "s": "ecr",
+        "d": "approval",
+        "kind": "req",
+        "label": "dispatch: image-published",
+        "n": "B4a",
+        "ss": "r",
+        "ds": "l",
+        "via": null
+      },
+      {
+        "s": "s3art",
+        "d": "approval",
+        "kind": "req",
+        "label": "dispatch: stubs-published",
+        "n": "B4b",
+        "ss": "tr",
+        "ds": "bl",
+        "via": [
+          [
+            1040,
+            360
+          ],
+          [
+            1040,
+            150
+          ]
+        ]
+      },
+      {
+        "s": "approval",
+        "d": "tfapply",
+        "kind": "req",
+        "label": "approved \u2192 apply",
+        "n": "B5",
+        "ss": "b",
+        "ds": "t",
+        "via": [
+          [
+            1180,
+            180
+          ],
+          [
+            1260,
+            180
+          ]
+        ]
+      },
+      {
+        "s": "oidc",
+        "d": "tfapply",
+        "kind": "id",
+        "label": "OIDC assume deploy role",
+        "n": null,
+        "ss": "t",
+        "ds": "b",
+        "via": [
+          [
+            1100,
+            300
+          ],
+          [
+            1260,
+            300
+          ]
+        ]
+      },
+      {
+        "s": "tfapply",
+        "d": "runtime",
+        "kind": "req",
+        "label": "provisions stack",
+        "n": "B6",
+        "ss": "b",
+        "ds": "t",
+        "via": [
+          [
+            1260,
+            310
+          ],
+          [
+            930,
+            310
+          ]
+        ]
+      },
+      {
+        "s": "user",
+        "d": "webapp",
+        "kind": "req",
+        "label": "sign in",
+        "n": "R1",
+        "ss": "r",
+        "ds": "l",
+        "via": null
+      },
+      {
+        "s": "entra",
+        "d": "webapp",
+        "kind": "id",
+        "label": "user token \u00b7 CUSTOM_JWT",
+        "n": "R2",
+        "ss": "b",
+        "ds": "t",
+        "via": null
+      },
+      {
+        "s": "webapp",
+        "d": "runtime",
+        "kind": "req",
+        "label": "InvokeAgentRuntime \u00b7 Bearer JWT",
+        "n": "R3",
+        "ss": "r",
+        "ds": "l",
+        "via": null
+      },
+      {
+        "s": "runtime",
+        "d": "model",
+        "kind": "req",
+        "label": "ConverseStream",
+        "n": "R4",
+        "ss": "b",
+        "ds": "t",
+        "via": null
+      },
+      {
+        "s": "model",
+        "d": "guard",
+        "kind": "id",
+        "label": "guardrailConfig \u00b7 async",
+        "n": null,
+        "ss": "b",
+        "ds": "t",
+        "via": null
+      },
+      {
+        "s": "runtime",
+        "d": "localtools",
+        "kind": "sup",
+        "label": "load ontology \u00b7 skills",
+        "n": null,
+        "ss": "bl",
+        "ds": "t",
+        "via": [
+          [
+            898,
+            860
+          ],
+          [
+            700,
+            860
+          ]
+        ]
+      },
+      {
+        "s": "runtime",
+        "d": "kb",
+        "kind": "sup",
+        "label": "Retrieve policies",
+        "n": null,
+        "ss": "bl",
+        "ds": "l",
+        "via": [
+          [
+            898,
+            890
+          ],
+          [
+            620,
+            890
+          ],
+          [
+            620,
+            1110
+          ]
+        ]
+      },
+      {
+        "s": "runtime",
+        "d": "memshort",
+        "kind": "sup",
+        "label": "write events",
+        "n": null,
+        "ss": "br",
+        "ds": "t",
+        "via": [
+          [
+            930,
+            840
+          ],
+          [
+            1130,
+            840
+          ]
+        ]
+      },
+      {
+        "s": "memshort",
+        "d": "memlong",
+        "kind": "sup",
+        "label": "async extract",
+        "n": null,
+        "ss": "b",
+        "ds": "t",
+        "via": null
+      },
+      {
+        "s": "runtime",
+        "d": "gateway",
+        "kind": "req",
+        "label": "MCP tool calls (+ user JWT)",
+        "n": "R5",
+        "ss": "r",
+        "ds": "l",
+        "via": null
+      },
+      {
+        "s": "cedar",
+        "d": "gateway",
+        "kind": "id",
+        "label": "ENFORCE \u00b7 permit/deny",
+        "n": null,
+        "ss": "b",
+        "ds": "t",
+        "via": [
+          [
+            1080,
+            690
+          ],
+          [
+            1180,
+            690
+          ]
+        ]
+      },
+      {
+        "s": "gateway",
+        "d": "entra",
+        "kind": "id",
+        "label": "OBO token exchange \u00b7 per-user",
+        "n": null,
+        "ss": "t",
+        "ds": "t",
+        "via": [
+          [
+            1180,
+            540
+          ],
+          [
+            520,
+            540
+          ]
+        ]
+      },
+      {
+        "s": "gateway",
+        "d": "sap",
+        "kind": "req",
+        "label": "SigV4 (agent)",
+        "n": "R6a",
+        "ss": "tr",
+        "ds": "l",
+        "via": null
+      },
+      {
+        "s": "gateway",
+        "d": "orders",
+        "kind": "req",
+        "label": "SigV4 (agent)",
+        "n": "R6b",
+        "ss": "r",
+        "ds": "l",
+        "via": null
+      },
+      {
+        "s": "gateway",
+        "d": "snowl",
+        "kind": "req",
+        "label": "OBO Bearer (user)",
+        "n": "R6c",
+        "ss": "br",
+        "ds": "l",
+        "via": null
+      },
+      {
+        "s": "snowl",
+        "d": "snowflake",
+        "kind": "req",
+        "label": "OAUTH \u2192 as the user \u00b7 RLS",
+        "n": "R7",
+        "ss": "r",
+        "ds": "l",
+        "via": null
+      },
+      {
+        "s": "snowl",
+        "d": "secrets",
+        "kind": "sup",
+        "label": "RSA key + config",
+        "n": null,
+        "ss": "b",
+        "ds": "t",
+        "via": null
+      },
+      {
+        "s": "runtime",
+        "d": "xray",
+        "kind": "sup",
+        "label": "gen_ai spans",
+        "n": null,
+        "ss": "b",
+        "ds": "t",
+        "via": [
+          [
+            930,
+            835
+          ],
+          [
+            790,
+            835
+          ],
+          [
+            790,
+            1278
+          ]
+        ]
+      },
+      {
+        "s": "runtime",
+        "d": "cwlogs",
+        "kind": "sup",
+        "label": "logs \u00b7 token EMF",
+        "n": null,
+        "ss": "b",
+        "ds": "t",
+        "via": [
+          [
+            930,
+            820
+          ],
+          [
+            1030,
+            820
+          ],
+          [
+            1030,
+            1278
+          ]
+        ]
+      },
+      {
+        "s": "cwlogs",
+        "d": "dashboards",
+        "kind": "sup",
+        "label": "metrics",
+        "n": null,
+        "ss": "r",
+        "ds": "l",
+        "via": null
+      },
+      {
+        "s": "dashboards",
+        "d": "alerts",
+        "kind": "sup",
+        "label": "threshold",
+        "n": null,
+        "ss": "r",
+        "ds": "l",
+        "via": null
+      },
+      {
+        "s": "alerts",
+        "d": "slo",
+        "kind": "sup",
+        "label": "SLI",
+        "n": null,
+        "ss": "r",
+        "ds": "l",
+        "via": null
+      },
+      {
+        "s": "xray",
+        "d": "onlineeval",
+        "kind": "sup",
+        "label": "sample spans",
+        "n": null,
+        "ss": "b",
+        "ds": "b",
+        "via": [
+          [
+            790,
+            1420
+          ],
+          [
+            1880,
+            1420
+          ]
+        ]
+      },
+      {
+        "s": "onlineeval",
+        "d": "ontology",
+        "kind": "sup",
+        "label": "eval findings \u2192 knowledge",
+        "n": null,
+        "ss": "t",
+        "ds": "l",
+        "via": [
+          [
+            1880,
+            1460
+          ],
+          [
+            60,
+            1460
+          ],
+          [
+            60,
+            100
+          ]
+        ]
+      }
+    ],
+    "notes": "Combined hero (replaces the simplified system-overview): spine + two tributaries + one return edge, fusing all nine planes into one lifecycle. A wide vertical gutter separates the Build & deploy band (top, y100-360) from the runtime spine (y600-1110) so the AWS Cloud zone border and the crossing identity edges have clear air. Build & deploy track B1-B6 runs left-to-right across the top then drops a single 'provisions' arrow (B6) into the Runtime. Request track R1-R7 is the data-plane spine (Cedar ENFORCE explicit, the SigV4-vs-OBO 6a/6b/6c egress split, Snowflake EXTERNAL_OAUTH+RLS). Knowledge appears as the corpus (build) + LOCAL tools + Knowledge Base (runtime); Memory is split short/long-term; Evaluation has two touchpoints \u2014 the offline gate inside the build and Online Evaluations grading live gen_ai spans. Observability (X-Ray, CW Logs, dashboards, alarms, SLOs) is the grey bottom strip; telemetry edges are unnumbered. The lone grey return edge onlineeval->ontology closes the lifecycle loop without forcing a numbered cycle. Snowflake sits outside the AWS Cloud boundary (external EXTERNAL_OAUTH egress). Coordinates calibrated for zero overlap; regenerate via the architecture-skill \u2014 never hand-edit the SVG."
+  }
+]

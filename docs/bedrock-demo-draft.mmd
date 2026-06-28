@@ -1,0 +1,76 @@
+graph TD
+  ontology["Ontology (objects + actions)"]
+  skills["Skills (playbooks (md))"]
+  kbdocs["KB docs (policy corpus)"]
+  monorepo["aniryou/bedrock-demo (agent·lib·knowledge·stubs·infra·app)"]
+  ci["Path-filtered CI (lint · pytest · tf · ontology)"]
+  agentbuild["agent-build.yml (bakes lib + knowledge · arm64)"]
+  offlineeval["Offline eval gate (pytest + LLM judge)"]
+  stubsrel["stubs-release.yml (Lambda zips + OpenAPI)"]
+  ecr["Amazon ECR (arm64 image :sha)"]
+  s3art["S3 artifacts (zips · OpenAPI · kb/ docs)"]
+  approval["Manual approval (deploy.yml · env:production)"]
+  oidc["GitHub OIDC role (deploy · env:production trust)"]
+  tfapply["terraform apply (S3 remote state · preflight)"]
+  entra["Microsoft Entra ID (Users · OBO provider · agent app)"]
+  cedar["Cedar Policy Engine (ENFORCE · OAuthUser · permit_*)"]
+  user["Analyst (human caller)"]
+  webapp["Application (Entra sign-in (browser))"]
+  runtime["AgentCore Runtime (Strands · ontology · skills · tools)"]
+  gateway["AgentCore Gateway (MCP · OBO broker)"]
+  model["Bedrock Nova Lite (amazon.nova-lite-v1:0)"]
+  guard["Bedrock Guardrail (PROMPT_ATTACK filter)"]
+  localtools["LOCAL tools (describe · load_skill · search)"]
+  kb["Knowledge Base (Titan v2 · S3 Vectors)"]
+  memshort["Memory · short-term (raw events · in-session · 90d)"]
+  memlong["Memory · long-term (semantic · preference · summary)"]
+  sap["SAP credit (SigV4 · AWS_IAM)"]
+  orders["order-actions (SigV4 · flagOrder)"]
+  snowl["snowflake-query (OBO Bearer | KEYPAIR_JWT)"]
+  secrets["Secrets Manager (RSA key · OBO secret)"]
+  snowflake["Snowflake (EXTERNAL_OAUTH · RLS · tables)"]
+  xray["X-Ray (gen_ai spans · Tx Search)"]
+  cwlogs["CloudWatch Logs (EMF token metric · PII mask)"]
+  dashboards["Dashboards (4 audiences)"]
+  alerts["Alarms → SNS (composite → email)"]
+  slo["App Signals SLOs (latency · availability)"]
+  onlineeval["Online Evaluations (grade gen_ai spans · opt-in)"]
+
+  ontology -->|"in-tree"| monorepo
+  skills -->|"in-tree"| monorepo
+  kbdocs -->|"in-tree"| monorepo
+  monorepo -->|"PR validate · lint · test"| ci
+  monorepo -->|"B1a on agent · lib · knowledge"| agentbuild
+  monorepo -->|"B1b on stubs/**"| stubsrel
+  agentbuild -->|"B2 run eval gate"| offlineeval
+  offlineeval -->|"B3a green → push arm64"| ecr
+  stubsrel -->|"B3b zips + OpenAPI"| s3art
+  ecr -->|"B4a dispatch: image-published"| approval
+  s3art -->|"B4b dispatch: stubs-published"| approval
+  approval -->|"B5 approved → apply"| tfapply
+  oidc -->|"OIDC assume deploy role"| tfapply
+  tfapply -->|"B6 provisions stack"| runtime
+  user -->|"R1 sign in"| webapp
+  entra -->|"R2 user token · CUSTOM_JWT"| webapp
+  webapp -->|"R3 InvokeAgentRuntime · Bearer JWT"| runtime
+  runtime -->|"R4 ConverseStream"| model
+  model -->|"guardrailConfig · async"| guard
+  runtime -->|"load ontology · skills"| localtools
+  runtime -->|"Retrieve policies"| kb
+  runtime -->|"write events"| memshort
+  memshort -->|"async extract"| memlong
+  runtime -->|"R5 MCP tool calls (+ user JWT)"| gateway
+  cedar -->|"ENFORCE · permit/deny"| gateway
+  gateway -->|"OBO token exchange · per-user"| entra
+  gateway -->|"R6a SigV4 (agent)"| sap
+  gateway -->|"R6b SigV4 (agent)"| orders
+  gateway -->|"R6c OBO Bearer (user)"| snowl
+  snowl -->|"R7 OAUTH → as the user · RLS"| snowflake
+  snowl -->|"RSA key + config"| secrets
+  runtime -->|"gen_ai spans"| xray
+  runtime -->|"logs · token EMF"| cwlogs
+  cwlogs -->|"metrics"| dashboards
+  dashboards -->|"threshold"| alerts
+  alerts -->|"SLI"| slo
+  xray -->|"sample spans"| onlineeval
+  onlineeval -->|"eval findings → knowledge"| ontology
